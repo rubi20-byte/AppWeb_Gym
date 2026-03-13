@@ -5,7 +5,7 @@
                     <ul class="list-inline list-inline-dots mb-0">
                         <li class="list-inline-item">
                             Copyright &copy; 2026
-                            <a href="." class="link-secondary">Gym RR</a>.
+                            <a href="." class="link-secondary">Gym Rubí</a>.
                             Todos los derechos reservados.
                         </div>
                     </div>

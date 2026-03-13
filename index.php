@@ -21,8 +21,17 @@ $recientes = $conexion->query("SELECT s.*, m.nombre as plan FROM socios s JOIN m
                 <h2 class="page-title">Panel de Control (Admin)</h2>
                 <div class="text-muted mt-1">Gestión del Gimnasio Rubi.</div>
             </div>
-            <div class="col-auto">
+            <div class="col-auto ms-auto">
                 <div class="btn-list">
+                    <a href="pase_diario.php" class="btn btn-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-ticket" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M15 5l-10 10a2.121 2.121 0 0 0 3 3l10 -10a2.121 2.121 0 0 0 -3 -3z"></path>
+                            <path d="M19 15v3h-3"></path>
+                            <path d="M9 11l.5 11.5l1.5 1.5l1.5 -1.5l.5 -11.5"></path>
+                        </svg>
+                        Vender Pase Diario
+                    </a>
                     <a href="nuevo_entrenador.php" class="btn btn-purple text-white"><i class="ti ti-plus me-2"></i> Registrar Entrenador</a>
                     <a href="nuevo_socio.php" class="btn btn-primary"><i class="ti ti-user-plus me-2"></i> Inscribir Socio</a>
                 </div>

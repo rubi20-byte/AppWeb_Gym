@@ -2,53 +2,45 @@
 include 'config.php';
 include 'header.php'; 
 ?>
-
 <div class="page-wrapper">
     <div class="container-xl mt-4">
         <div class="row align-items-center mb-4">
-            <div class="col">
-                <h2 class="page-title">Estado de Membresías</h2>
-                <div class="text-muted mt-1">Monitoreo de vencimientos automáticos.</div>
-            </div>
+            <div class="col"><h2 class="page-title text-cyan">Planes y Membresías</h2></div>
             <div class="col-auto">
-                <a href="nuevo_socio.php" class="btn btn-primary"> + Nuevo Socio</a>
+                <a href="nueva_membresia.php" class="btn btn-cyan">
+                    <i class="ti ti-plus me-2"></i> Nuevo Plan
+                </a>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card shadow-sm">
             <div class="table-responsive">
                 <table class="table card-table table-vcenter">
                     <thead>
                         <tr>
-                            <th>Socio</th>
-                            <th>Plan Contratado</th>
-                            <th>Fecha Inicio</th>
-                            <th>Fecha Vencimiento</th>
+                            <th>Nombre del Plan</th>
+                            <th>Duración</th>
+                            <th>Precio</th>
                             <th>Estado</th>
+                            <th class="w-1">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
-                        $res = $conexion->query("SELECT s.*, m.nombre as plan FROM socios s JOIN membresias m ON s.id_membresia = m.id_membresia ORDER BY s.fecha_vencimiento ASC");
-                        
+                        $res = $conexion->query("SELECT * FROM membresias ORDER BY precio ASC");
                         while($row = $res->fetch_assoc()):
-                            $vence = strtotime($row['fecha_vencimiento']);
-                            $hoy = strtotime(date('Y-m-d'));
-                            
-                            // Si la fecha de hoy es mayor a la de vencimiento... ¡Ya caducó!
-                            $esta_vencido = ($hoy > $vence);
-                            $badge_color = $esta_vencido ? 'red' : 'green';
-                            $badge_text = $esta_vencido ? 'VENCIDA' : 'ACTIVA';
+                            $status_color = ($row['estado'] == 'activo') ? 'green' : 'red';
                         ?>
                         <tr>
-                            <td><strong><?php echo $row['nombre']." ".$row['apellido']; ?></strong></td>
-                            <td><span class="badge bg-blue-lt"><?php echo $row['plan']; ?></span></td>
-                            <td><?php echo date('d M Y', strtotime($row['fecha_registro'])); ?></td>
-                            <td><?php echo date('d M Y', $vence); ?></td>
+                            <td><div class="font-weight-medium"><?php echo $row['nombre']; ?></div></td>
+                            <td><?php echo $row['duracion_meses']; ?> Mes(es)</td>
+                            <td class="text-muted">$<?php echo number_format($row['precio'], 2); ?></td>
+                            <td><span class="badge bg-<?php echo $status_color; ?>-lt"><?php echo strtoupper($row['estado']); ?></span></td>
                             <td>
-                                <span class="badge bg-<?php echo $badge_color; ?>-lt">
-                                    <?php echo $badge_text; ?>
-                                </span>
+                                <div class="btn-list flex-nowrap">
+                                    <a href="editar_membresia.php?id=<?php echo $row['id_membresia']; ?>" class="btn btn-white btn-icon"><i class="ti ti-edit text-blue"></i></a>
+                                    <a href="eliminar_membresia.php?id=<?php echo $row['id_membresia']; ?>" class="btn btn-white btn-icon" onclick="return confirm('¿Eliminar este plan?');"><i class="ti ti-trash text-red"></i></a>
+                                </div>
                             </td>
                         </tr>
                         <?php endwhile; ?>
@@ -58,3 +50,4 @@ include 'header.php';
         </div>
     </div>
 </div>
+<?php include 'footer.php'; ?>

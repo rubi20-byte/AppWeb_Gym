@@ -2,7 +2,7 @@
 include 'config.php';
 include 'header.php'; 
 
-// 1. Obtener los datos actuales del socio
+// 1. Obtener los datos actuales del socio antes de cualquier cambio
 if (isset($_GET['id'])) {
     $id = mysqli_real_escape_string($conexion, $_GET['id']);
     $resultado = $conexion->query("SELECT * FROM socios WHERE id_socio = $id");
@@ -26,9 +26,9 @@ if ($_POST) {
     $mem_id = $_POST['id_membresia'];
     $ent_id = ($_POST['id_entrenador'] == "") ? "NULL" : $_POST['id_entrenador']; 
     $est = $_POST['estado'];
+    $f_hoy = date('Y-m-d');
 
-    // --- NUEVO: LÓGICA DE ACTUALIZACIÓN DE FECHA (RENOVACIÓN) ---
-    // Si el plan cambió, recalculamos el vencimiento desde hoy
+    // --- LÓGICA DE ACTUALIZACIÓN DE FECHA Y HISTORIAL ---
     $sql_fecha_vencimiento = "";
     if ($mem_id != $socio['id_membresia']) {
         $mem_res = $conexion->query("SELECT duracion_meses FROM membresias WHERE id_membresia = $mem_id");
@@ -37,6 +37,11 @@ if ($_POST) {
             $meses = $m['duracion_meses'];
             $nueva_fecha = date('Y-m-d', strtotime("+ $meses month"));
             $sql_fecha_vencimiento = ", fecha_vencimiento = '$nueva_fecha'";
+
+            // INSERTAR EN HISTORIAL: Como el plan cambió, guardamos el registro en la tabla histórica
+            $sql_historial = "INSERT INTO socios_membresias (id_socio, id_membresia, fecha_inicio, fecha_fin, estado) 
+                              VALUES ($id, $mem_id, '$f_hoy', '$nueva_fecha', 'activa')";
+            $conexion->query($sql_historial);
         }
     }
 
@@ -147,7 +152,7 @@ $resultado_entrenadores = $conexion->query($query_entrenadores);
                             }
                             ?>
                         </select>
-                        <small class="text-blue">Al cambiar el plan, la fecha de vencimiento se reinicia desde hoy.</small>
+                        <small class="text-blue">Si cambias el plan, se generará un nuevo registro en el historial.</small>
                     </div>
 
                     <div class="col-md-4 mb-3">

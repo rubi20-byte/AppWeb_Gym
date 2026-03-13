@@ -18,8 +18,9 @@
     <header class="navbar navbar-expand-md navbar-light d-print-none">
         <div class="container-xl">
             <h1 class="navbar-brand navbar-brand-autodark d-none-initial-sm pe-0 pe-md-3">
-                <a href="index.php">
-                    <i class="ti ti-stretching text-blue me-2"></i> GYM Rubi
+                <a href="index.php" class="navbar-brand navbar-brand-autodark">
+                    <img src="assets/img/logo2.png" alt="Gym Rubi" height="36" class="navbar-brand-image me-2">
+                    <span class="d-none d-sm-inline">GYM RUBÍ</span>
                 </a>
             </h1>
 
@@ -59,6 +60,12 @@
                             <a class="nav-link" href="membresias.php">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-calendar-event"></i></span>
                                 <span class="nav-link-title">Membresías</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="reportes.php">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-chart-bar"></i></span>
+                                <span class="nav-link-title">Reportes</span>
                             </a>
                         </li>
                     </ul>
