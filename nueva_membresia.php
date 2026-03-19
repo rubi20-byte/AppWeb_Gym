@@ -1,6 +1,8 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
+
 
 if ($_POST) {
     $nom = mysqli_real_escape_string($conexion, $_POST['nombre']);
@@ -20,7 +22,7 @@ if ($_POST) {
 <div class="page-wrapper">
     <div class="container-xl mt-4">
         <form method="POST" class="card col-md-6 mx-auto shadow">
-            <div class="card-header bg-primary-lt"><h3 class="card-title">Crear Nuevo Plan</h3></div>
+            <div class="card-header bg-cyan-lt"><h3 class="card-title">Crear Nuevo Plan</h3></div>
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label">Nombre de la Membresía</label>
@@ -45,8 +47,8 @@ if ($_POST) {
                 </div>
             </div>
             <div class="card-footer text-end">
-                <a href="membresias.php" class="btn btn-link">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar Plan</button>
+                <a href="membresias.php" class="btn btn-link text-cyan">Cancelar</a>
+                <button type="submit" class="btn btn-cyan">Guardar Plan</button>
             </div>
         </form>
     </div>

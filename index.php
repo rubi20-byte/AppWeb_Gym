@@ -1,5 +1,6 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
 
 $hoy = date('Y-m-d');
@@ -60,7 +61,7 @@ $recientes = $conexion->query("SELECT s.*, m.nombre as plan FROM socios s JOIN m
                 </a>
             </div>
             <div class="col-sm-6 col-lg-3">
-                <a href="socios.php" class="card card-sm card-link">
+                <a href="socios_vencidos.php" class="card card-sm card-link">
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-auto"><span class="bg-red text-white avatar"><i class="ti ti-alert-triangle"></i></span></div>

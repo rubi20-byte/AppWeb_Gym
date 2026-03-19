@@ -1,17 +1,24 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
+
 
 if ($_POST) {
     $nombre_visita = mysqli_real_escape_string($conexion, $_POST['nombre_cliente']);
     $monto = $_POST['monto'];
     $fecha = date('Y-m-d');
+    $referencia = "Pase Diario: " . $nombre_visita;
 
-    $sql = "INSERT INTO pagos (monto, fecha_pago, nota) 
-            VALUES ('$monto', '$fecha', 'Pase Diario: $nombre_visita')";
-    
+    // Agregamos 'referencia' a las columnas y al VALUES
+    $sql = "INSERT INTO pagos (monto, fecha_pago, referencia, concepto) 
+            VALUES ('$monto', '$fecha', '$referencia', 'Pase Diario')";
+
     if ($conexion->query($sql)) {
         echo "<script>alert('Pase registrado con éxito'); window.location='index.php';</script>";
+    } else {
+        // Esto te dirá si falta la columna 'concepto'
+        echo "Error: " . $conexion->error; 
     }
 }
 ?>

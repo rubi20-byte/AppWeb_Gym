@@ -1,6 +1,8 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
+
 
 $id = $_GET['id'];
 $resultado = $conexion->query("SELECT * FROM membresias WHERE id_membresia = $id");

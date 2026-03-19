@@ -1,5 +1,6 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
 
 if (isset($_GET['id'])) {

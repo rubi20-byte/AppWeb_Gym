@@ -1,6 +1,8 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
+
 
 // 1. Obtener el ID del entrenador desde la URL
 $id_ent = isset($_GET['id']) ? $_GET['id'] : '';

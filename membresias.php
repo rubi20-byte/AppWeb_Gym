@@ -1,6 +1,8 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
+
 ?>
 <div class="page-wrapper">
     <div class="container-xl mt-4">

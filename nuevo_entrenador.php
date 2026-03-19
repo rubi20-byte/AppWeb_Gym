@@ -1,6 +1,8 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
+
 
 if ($_POST) {
     $nom = $_POST['nombre'];
@@ -26,7 +28,7 @@ if ($_POST) {
     <div class="container-xl mt-4">
         <form method="POST" class="card col-md-10 mx-auto shadow">
             <div class="card-header bg-purple-lt">
-                <h3 class="card-title">Registro de Entrenadores (Control de Comisiones)</h3>
+                <h3 class="card-title">Registro de Entrenadores</h3>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -65,9 +67,13 @@ if ($_POST) {
                     </div>
                 </div>
             </div>
-            <div class="card-footer text-end">
-                <button type="submit" class="btn btn-purple text-white">Dar de Alta Entrenador</button>
-            </div>
-        </form>
+           <div class="card-footer text-end bg-light">
+            <a href="entrenadores.php" class="btn btn-link text-purple">
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-purple text-white shadow-sm">
+                <i class="ti ti-user-plus me-2"></i>Dar de Alta Entrenador
+            </button>
+        </div>
     </div>
 </div>

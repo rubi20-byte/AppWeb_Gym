@@ -1,6 +1,8 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
+
 ?>
 <div class="page-wrapper">
     <div class="container-xl mt-4">
@@ -26,7 +28,7 @@ include 'header.php';
                         <?php
                         $hoy = strtotime(date('Y-m-d'));
                         
-                        // Traemos el nombre del titular si existe (Auto-Join)
+                        // Traemos el nombre del titular si existe
                         $sql = "SELECT s.*, m.nombre as plan, t.nombre as nombre_titular, t.apellido as apellido_titular 
                                 FROM socios s 
                                 JOIN membresias m ON s.id_membresia = m.id_membresia 

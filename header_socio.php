@@ -27,7 +27,7 @@
         <div class="navbar-nav flex-row order-md-last">
             <div class="nav-item d-flex me-3">
                 <div class="btn-list">
-                    <span class="badge bg-blue-lt d-none d-md-inline-block">Usuario: Admin</span>
+                    <span class="badge bg-blue-lt d-none d-md-inline-block">Usuario: Socio</span>
                     <a href="logout.php" class="btn btn-outline-danger btn-sm">
                         <i class="ti ti-logout me-1"></i> Salir
                     </a>
@@ -39,44 +39,23 @@
             <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php">
+                        <a class="nav-link" href="dashboard_socio.php">
                             <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-home"></i></span>
                             <span class="nav-link-title">Inicio</span>
                         </a>
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link" href="socios.php">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-users"></i></span>
-                            <span class="nav-link-title">Socios</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
                         <a class="nav-link" href="entrenadores.php">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-barbell"></i></span>
-                            <span class="nav-link-title">Entrenadores</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="membresias.php">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-calendar-event"></i></span>
-                            <span class="nav-link-title">Membresías</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link text-primary" href="acceso_qr.php">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block text-primary"><i class="ti ti-scan"></i></span>
-                            <span class="nav-link-title">Control de Acceso</span>
+                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clipboard-text"></i></span>
+                            <span class="nav-link-title">Mis Evaluaciones</span>
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link" href="reportes.php">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-chart-bar"></i></span>
-                            <span class="nav-link-title">Reportes</span>
+                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clipboard-data"></i></span>
+                            <span class="nav-link-title">Mis Reportes</span>
                         </a>
                     </li>
                 </ul>

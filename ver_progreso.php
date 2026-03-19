@@ -1,5 +1,6 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
 
 $id_socio = isset($_GET['id']) ? $_GET['id'] : '';
@@ -23,50 +24,72 @@ if (!$socio) {
             </div>
             <div class="col-auto">
                 <a href="seguimiento_entrenador.php?id=<?php echo $socio['id_entrenador']; ?>" class="btn btn-secondary">
-                    <i class="ti ti-arrow-back me-2"></i>Volver al Seguimiento
+                    <i class="ti ti-arrow-back me-2"></i>Volver
                 </a>
             </div>
         </div>
 
-        <div class="card shadow-sm">
-            <div class="table-responsive">
-                <table class="table card-table table-vcenter text-nowrap">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Peso (kg)</th>
-                            <th>Cintura (cm)</th>
-                            <th>Cadera (cm)</th>
-                            <th>% Grasa</th>
-                            <th>% Músculo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php 
-                        $res_evals = $conexion->query("SELECT * FROM evaluaciones WHERE id_socio = '$id_socio' ORDER BY fecha_evaluacion DESC");
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table card-table table-vcenter text-nowrap table-striped">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Peso (kg)</th>
+                    <th>IMC</th> 
+                    <th>Cintura (cm)</th>
+                    <th>Cadera (cm)</th>
+                    <th>% Grasa</th>
+                    <th>% Músculo</th>
+                    <th>Evolución</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php 
+                $res_evals = $conexion->query("SELECT * FROM evaluaciones WHERE id_socio = '$id_socio' ORDER BY fecha_evaluacion DESC");
+                $evaluaciones = $res_evals->fetch_all(MYSQLI_ASSOC);
 
-                        if($res_evals && $res_evals->num_rows > 0): 
-                            while($ev = $res_evals->fetch_assoc()): 
-                        ?>
-                        <tr>
-                            <td>
-                                <strong><?php echo date('d/m/Y', strtotime($ev['fecha_evaluacion'])); ?></strong>
-                            </td>
-                            <td><?php echo $ev['peso']; ?> kg</td>
-                            <td><?php echo $ev['cintura']; ?> cm</td>
-                            <td><?php echo $ev['cadera']; ?> cm</td>
-                            <td><?php echo $ev['porcentaje_grasa']; ?>%</td>
-                            <td><?php echo $ev['porcentaje_musculo']; ?>%</td>
-                        </tr>
-                        <?php endwhile; else: ?>
-                            <tr>
-                                <td colspan="6" class="text-center py-4">Este socio aún no tiene evaluaciones registradas.</td>
-                            </tr>
+                if(count($evaluaciones) > 0): 
+                    foreach($evaluaciones as $index => $ev): 
+                        // Lógica para comparar con la evaluación anterior
+                        $prev = isset($evaluaciones[$index + 1]) ? $evaluaciones[$index + 1] : null;
+                        $diff_peso = $prev ? $ev['peso'] - $prev['peso'] : 0;
+                ?>
+                <tr>
+                    <td>
+                        <strong><?php echo date('d/m/Y', strtotime($ev['fecha_evaluacion'])); ?></strong>
+                    </td>
+                    <td class="font-weight-bold"><?php echo $ev['peso']; ?> kg</td>
+                    <td>
+                        <span class="badge bg-blue-lt">
+                            <?php echo !empty($ev['imc']) ? $ev['imc'] : '---'; ?>
+                        </span>
+                    </td>
+                    <td><?php echo $ev['cintura']; ?> cm</td>
+                    <td><?php echo $ev['cadera']; ?> cm</td>
+                    <td><?php echo $ev['porcentaje_grasa']; ?>%</td>
+                    <td><?php echo $ev['porcentaje_musculo']; ?>%</td>
+                    <td>
+                        <?php if($prev): ?>
+                            <?php if($diff_peso < 0): ?>
+                                <span class="text-green"><i class="ti ti-trending-down"></i> Bajó <?php echo abs($diff_peso); ?>kg</span>
+                            <?php elseif($diff_peso > 0): ?>
+                                <span class="text-red"><i class="ti ti-trending-up"></i> Subió <?php echo $diff_peso; ?>kg</span>
+                            <?php else: ?>
+                                <span class="text-muted">Sin cambios</span>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <span class="badge bg-gray-lt">Inicial</span>
                         <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    </td>
+                </tr>
+                <?php endforeach; else: ?>
+                    <tr>
+                        <td colspan="8" class="text-center py-4">No hay evaluaciones registradas.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
 </div>
 

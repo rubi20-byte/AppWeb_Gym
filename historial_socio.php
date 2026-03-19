@@ -1,6 +1,8 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
+
 
 $id = $_GET['id'];
 $socio_res = $conexion->query("SELECT nombre, apellido FROM socios WHERE id_socio = $id");
@@ -37,7 +39,7 @@ $s = $socio_res->fetch_assoc();
                             <td><?php echo $h['nombre_plan']; ?></td>
                             <td><?php echo date('d/m/Y', strtotime($h['fecha_inicio'])); ?></td>
                             <td><?php echo date('d/m/Y', strtotime($h['fecha_fin'])); ?></td>
-                            <td><span class="badge bg-blue-lt"><?php echo $h['estado']; ?></span></td>
+                            <td><span class="badge bg-green-lt text-uppercase"><?php echo $h['estado']; ?></span></td>
                         </tr>
                         <?php endwhile; ?>
                     </tbody>

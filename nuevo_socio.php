@@ -1,6 +1,8 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
+
 
 if ($_POST) {
     $nom   = mysqli_real_escape_string($conexion, $_POST['nombre']);
@@ -47,6 +49,11 @@ if ($_POST) {
             $f_ven = $f_reg;
         }
     }
+    // Limpieza de caracteres raros
+    $nombre = mysqli_real_escape_string($conexion, $_POST['nombre']);
+    $nombre = strip_tags($nombre); // Quita etiquetas HTML
+    $apellido = mysqli_real_escape_string($conexion, $_POST['apellido']);
+    $apellido = strip_tags($apellido); // Quita etiquetas HTML
 
     $sql = "INSERT INTO socios (id_titular, nombre, apellido, telefono, contacto_emergencia, correo, direccion, fecha_nacimiento, fecha_registro, fecha_vencimiento, id_membresia, id_entrenador, qr_codigo, foto, estado) 
             VALUES ($id_titular, '$nom', '$ape', '$tel', '$con_e', '$cor', '$dir', '$f_nac', '$f_reg', '$f_ven', $id_mem, $id_ent, '$codigo_qr', '$nombre_foto', 'activo')";
@@ -85,11 +92,15 @@ if ($_POST) {
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Nombre(s)</label>
-                        <input type="text" name="nombre" class="form-control" required>
+                        <input type="text" name="nombre" class="form-control" 
+                        pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$" 
+                        title="El nombre solo debe contener letras." required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Apellido(s)</label>
-                        <input type="text" name="apellido" class="form-control" required>
+                        <input type="text" name="apellido" class="form-control" 
+                        pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$" 
+                        title="El apellido solo debe contener letras." required>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -114,8 +125,8 @@ if ($_POST) {
                     <div class="hr-text text-blue">Vínculo Familiar y Plan</div>
 
                     <div class="col-md-12 mb-3">
-                        <label class="form-label text-purple">¿Es dependiente de un Titular? (Opcional)</label>
-                        <select name="id_titular" class="form-select border-purple">
+                        <label class="form-label text-primary">¿Es dependiente de un Titular? (Opcional)</label>
+                        <select name="id_titular" class="form-select border-primary">
                             <option value="">-- No, es Titular Independiente --</option>
                             <?php 
                             $titulares = $conexion->query("SELECT id_socio, nombre, apellido FROM socios WHERE id_titular IS NULL ORDER BY nombre ASC");

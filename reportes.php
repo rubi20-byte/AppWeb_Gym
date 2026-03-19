@@ -1,23 +1,36 @@
 <?php 
 include 'config.php';
+include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
+
 
 // 1. Estadísticas de Socios
 $total_socios = $conexion->query("SELECT COUNT(*) as t FROM socios")->fetch_assoc()['t'];
 $socios_activos = $conexion->query("SELECT COUNT(*) as t FROM socios WHERE estado = 'activo'")->fetch_assoc()['t'];
 $socios_vencidos = $conexion->query("SELECT COUNT(*) as t FROM socios WHERE estado = 'vencido'")->fetch_assoc()['t'];
 
-// 2. Ingresos del mes actual
+// 2. Ingresos del mes actual (Membresías de socios + Pases Diarios)
 $res_ingresos = $conexion->query("
-    SELECT SUM(m.precio) as total 
-    FROM socios s 
-    JOIN membresias m ON s.id_membresia = m.id_membresia 
-    WHERE MONTH(s.fecha_registro) = MONTH(CURRENT_DATE()) 
-    AND YEAR(s.fecha_registro) = YEAR(CURRENT_DATE())
+    SELECT (
+        /* Suma de membresías de socios registrados este mes */
+        (SELECT IFNULL(SUM(m.precio), 0) 
+         FROM socios s 
+         JOIN membresias m ON s.id_membresia = m.id_membresia 
+         WHERE MONTH(s.fecha_registro) = MONTH(CURRENT_DATE()) 
+         AND YEAR(s.fecha_registro) = YEAR(CURRENT_DATE()))
+        + 
+        /* Suma de pases diarios registrados en la tabla pagos */
+        (SELECT IFNULL(SUM(monto), 0) 
+         FROM pagos 
+         WHERE concepto = 'Pase Diario' 
+         AND MONTH(fecha_pago) = MONTH(CURRENT_DATE()) 
+         AND YEAR(fecha_pago) = YEAR(CURRENT_DATE()))
+    ) as total
 ");
+
 $ingresos_mes = $res_ingresos->fetch_assoc()['total'] ?? 0;
 
-// 3. Proyección de ingresos (lo que deberían pagar los activos)
+// 3. Proyeccion de ingresos (lo que deberían pagar los activos)
 $res_proyeccion = $conexion->query("
     SELECT SUM(m.precio) as total 
     FROM socios s 
@@ -106,6 +119,7 @@ $proyeccion = $res_proyeccion->fetch_assoc()['total'] ?? 0;
                 </div>
             </div>
         </div>
+
         <div class="row row-cards mb-4">
             <div class="col-12">
                 <div class="card shadow-sm border-0">
@@ -115,33 +129,72 @@ $proyeccion = $res_proyeccion->fetch_assoc()['total'] ?? 0;
                     <div class="card-body">
                         <div class="row">
                             <?php 
-                            // Consultamos cuántos socios tiene cada membresía
-                            $res_m = $conexion->query("
-                                SELECT m.nombre as nombre_membresia, COUNT(s.id_socio) as total 
-                                FROM membresias m 
-                                LEFT JOIN socios s ON m.id_membresia = s.id_membresia 
-                                GROUP BY m.id_membresia
-                            ");
-
+                            $res_m = $conexion->query("SELECT id_membresia, nombre as nombre_membresia FROM membresias");
                             while($m = $res_m->fetch_assoc()): 
-                                // Calculamos el porcentaje para la barra
-                                $porcentaje = ($total_socios > 0) ? ($m['total'] / $total_socios) * 100 : 0;
+                                $id_m = $m['id_membresia'];
+                                $nombre_m = $m['nombre_membresia'];
+
+                                if($nombre_m == 'Visita Diaria' || $nombre_m == 'Pase Diario') {
+                                    $res_c = $conexion->query("SELECT COUNT(*) as total FROM pagos WHERE concepto = 'Pase Diario'");
+                                    $cantidad = $res_c->fetch_assoc()['total'];
+                                } else {
+                                    $res_c = $conexion->query("SELECT COUNT(*) as total FROM socios WHERE id_membresia = '$id_m' AND estado = 'activo'");
+                                    $cantidad = $res_c->fetch_assoc()['total'];
+                                }
+                                $porcentaje = ($total_socios > 0) ? ($cantidad / $total_socios) * 100 : ($cantidad * 5); 
                             ?>
                             <div class="col-md-4 mb-3">
                                 <div class="mb-2">
                                     <div class="d-flex align-items-center mb-1">
-                                        <div class="font-weight-bold"><?php echo $m['nombre_membresia']; ?></div>
-                                        <div class="ms-auto">
-                                            <span class="text-muted small"><?php echo $m['total']; ?> socios</span>
-                                        </div>
+                                        <div class="font-weight-bold"><?php echo $nombre_m; ?></div>
+                                        <div class="ms-auto"><span class="text-muted small"><?php echo $cantidad; ?> registros</span></div>
                                     </div>
                                     <div class="progress progress-sm">
-                                        <div class="progress-bar bg-yellow" style="width: <?php echo $porcentaje; ?>%"></div>
+                                        <div class="progress-bar bg-yellow" style="width: <?php echo min($porcentaje, 100); ?>%"></div>
                                     </div>
                                 </div>
                             </div>
                             <?php endwhile; ?>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-status-top bg-yellow"></div>
+                    <div class="card-header">
+                        <h3 class="card-title text-dark font-weight-bold">Historial de Pases Diarios (Hoy)</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nombre del Visitante</th>
+                                    <th>Monto</th>
+                                    <th>Fecha</th>
+                                    <th class="w-1">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                $hoy = date('Y-m-d');
+                                $res_p = $conexion->query("SELECT referencia, monto, fecha_pago FROM pagos WHERE concepto = 'Pase Diario' AND fecha_pago = '$hoy' ORDER BY id_pago DESC");
+                                if($res_p->num_rows > 0):
+                                    while($p = $res_p->fetch_assoc()): ?>
+                                    <tr>
+                                        <td class="font-weight-bold"><?php echo str_replace("Pase Diario: ", "", $p['referencia']); ?></td>
+                                        <td class="text-green">$<?php echo number_format($p['monto'], 2); ?></td>
+                                        <td><?php echo date('d/m/Y', strtotime($p['fecha_pago'])); ?></td>
+                                        <td><span class="badge bg-green-lt">PAGADO</span></td>
+                                    </tr>
+                                <?php endwhile; else: ?>
+                                    <tr><td colspan="4" class="text-center text-muted">No hay pases registrados hoy.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -175,14 +228,12 @@ $proyeccion = $res_proyeccion->fetch_assoc()['total'] ?? 0;
                                 ");
                                 while($row = $res_list->fetch_assoc()): 
                                     $vence = new DateTime($row['fecha_vencimiento']);
-                                    $hoy = new DateTime();
-                                    $diff = $hoy->diff($vence);
+                                    $hoy_dt = new DateTime();
+                                    $diff = $hoy_dt->diff($vence);
                                     $dias = (int)$diff->format("%r%a");
                                 ?>
                                 <tr>
-                                    <td>
-                                        <div class="font-weight-bold text-dark"><?php echo $row['nombre']." ".$row['apellido']; ?></div>
-                                    </td>
+                                    <td><div class="font-weight-bold text-dark"><?php echo $row['nombre']." ".$row['apellido']; ?></div></td>
                                     <td class="text-muted"><?php echo $row['m_nombre']; ?></td>
                                     <td><?php echo date('d/m/Y', strtotime($row['fecha_vencimiento'])); ?></td>
                                     <td>
