@@ -1,15 +1,15 @@
 <?php 
 include 'config.php';
-include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
+include 'validar_admin.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
 
 
-// 1. Estadísticas de Socios
+// Estadísticas de Socios
 $total_socios = $conexion->query("SELECT COUNT(*) as t FROM socios")->fetch_assoc()['t'];
 $socios_activos = $conexion->query("SELECT COUNT(*) as t FROM socios WHERE estado = 'activo'")->fetch_assoc()['t'];
 $socios_vencidos = $conexion->query("SELECT COUNT(*) as t FROM socios WHERE estado = 'vencido'")->fetch_assoc()['t'];
 
-// 2. Ingresos del mes actual (Membresías de socios + Pases Diarios)
+// Ingresos del mes actual (Membresías de socios + Pases Diarios)
 $res_ingresos = $conexion->query("
     SELECT (
         /* Suma de membresías de socios registrados este mes */
@@ -30,7 +30,7 @@ $res_ingresos = $conexion->query("
 
 $ingresos_mes = $res_ingresos->fetch_assoc()['total'] ?? 0;
 
-// 3. Proyeccion de ingresos (lo que deberían pagar los activos)
+// Proyeccion de ingresos (lo que deberían pagar los activos)
 $res_proyeccion = $conexion->query("
     SELECT SUM(m.precio) as total 
     FROM socios s 
@@ -46,7 +46,7 @@ $proyeccion = $res_proyeccion->fetch_assoc()['total'] ?? 0;
             <div class="row align-items-center">
                 <div class="col">
                     <h2 class="page-title text-yellow" style="font-size: 1.3rem;">
-                        Módulo de Reportes y Estadísticas
+                        Reportes y Estadísticas
                     </h2>
                     <p class="text-muted">Resumen financiero y operativo</p>
                 </div>
@@ -181,7 +181,7 @@ $proyeccion = $res_proyeccion->fetch_assoc()['total'] ?? 0;
                             <tbody>
                                 <?php 
                                 $hoy = date('Y-m-d');
-                                $res_p = $conexion->query("SELECT referencia, monto, fecha_pago FROM pagos WHERE concepto = 'Pase Diario' AND fecha_pago = '$hoy' ORDER BY id_pago DESC");
+                                $res_p = $conexion->query("SELECT referencia, monto, fecha_pago FROM pagos WHERE concepto = 'Pase Diario' AND DATE(fecha_pago) = '$hoy' ORDER BY id_pago DESC");
                                 if($res_p->num_rows > 0):
                                     while($p = $res_p->fetch_assoc()): ?>
                                     <tr>
@@ -200,7 +200,7 @@ $proyeccion = $res_proyeccion->fetch_assoc()['total'] ?? 0;
             </div>
         </div>
 
-        <div class="row">
+        <div class="row mb-4">
             <div class="col-12">
                 <div class="card shadow-sm border-0">
                     <div class="card-status-top bg-yellow"></div>
@@ -258,7 +258,59 @@ $proyeccion = $res_proyeccion->fetch_assoc()['total'] ?? 0;
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<?php include 'footer.php'; ?>
+        <hr class="my-5">
+        <div class="row row-cards">
+            <div class="col-12">
+                <h3 class="text-yellow mb-3">Resumen de Caja General</h3>
+            </div>
+            <?php 
+            $res_c = $conexion->query("SELECT 
+                SUM(CASE WHEN metodo_pago = 'Efectivo' THEN monto ELSE 0 END) as ef,
+                SUM(CASE WHEN metodo_pago = 'Tarjeta' THEN monto ELSE 0 END) as tj,
+                SUM(CASE WHEN metodo_pago = 'Transferencia' THEN monto ELSE 0 END) as tr,
+                SUM(monto) as total FROM pagos WHERE DATE(fecha_pago) = '$hoy'");
+            $c = $res_c->fetch_assoc();
+            ?>
+            <div class="col-md-4">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-green text-white avatar me-3"><i class="ti ti-cash"></i></span>
+                            <div>
+                                <div class="font-weight-medium">Efectivo Hoy</div>
+                                <div class="text-muted">$<?php echo number_format($c['ef'] ?? 0, 2); ?></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-blue text-white avatar me-3"><i class="ti ti-credit-card"></i></span>
+                            <div>
+                                <div class="font-weight-medium">Otros (Tarjeta/Transf)</div>
+                                <div class="text-muted">$<?php echo number_format(($c['tj'] + $c['tr']) ?? 0, 2); ?></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-sm bg-yellow-lt">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-yellow text-white avatar me-3"><i class="ti ti-currency-dollar"></i></span>
+                            <div>
+                                <div class="font-weight-bold">TOTAL CAJA HOY</div>
+                                <div class="h3 mb-0">$<?php echo number_format($c['total'] ?? 0, 2); ?></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div> </div> <?php include 'footer.php'; ?>

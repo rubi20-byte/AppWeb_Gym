@@ -1,6 +1,6 @@
 <?php 
 include 'config.php';
-include 'validar.php'; // este archivo valida que seas admin para entrar a esta pagina
+include 'validar_admin.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
 
 $hoy = date('Y-m-d');

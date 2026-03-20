@@ -65,11 +65,13 @@
                             <span class="nav-link-title">Membresías</span>
                         </a>
                     </li>
-
+                    
                     <li class="nav-item">
-                        <a class="nav-link text-primary" href="acceso_qr.php">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block text-primary"><i class="ti ti-scan"></i></span>
-                            <span class="nav-link-title">Control de Acceso</span>
+                        <a class="nav-link" href="pagos.php">
+                            <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                <i class="ti ti-cash-banknote"></i>
+                            </span>
+                            <span class="nav-link-title">Pagos y Caja</span>
                         </a>
                     </li>
 
