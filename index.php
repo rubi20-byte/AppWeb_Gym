@@ -24,6 +24,10 @@ $recientes = $conexion->query("SELECT s.*, m.nombre as plan FROM socios s JOIN m
             </div>
             <div class="col-auto ms-auto">
                 <div class="btn-list">
+                    <a href="admin_rutinas.php" class="btn btn-pink text-white">
+                        <i class="ti ti-stretching me-2"></i>
+                        Planes y Rutinas
+                    </a>
                     <a href="nuevo_entrenador.php" class="btn btn-purple text-white"><i class="ti ti-plus me-2"></i> Registrar Entrenador</a>
                     <a href="nuevo_socio.php" class="btn btn-primary"><i class="ti ti-user-plus me-2"></i> Inscribir Socio</a>
                 </div>
