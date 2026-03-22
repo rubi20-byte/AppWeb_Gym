@@ -1,27 +1,31 @@
 <?php
 include 'config.php';
+include 'validar_admin.php'; 
 
 if ($_POST) {
-    // Recibimos los datos del formulario
-    $id_socio = $_POST['id_socio'];
+    // 1. Recibimos y saneamos los datos
+    $id_socio = mysqli_real_escape_string($conexion, $_POST['id_socio']);
     $peso = (float)$_POST['peso'];
     $talla_cm = (float)$_POST['talla'];
-    $cintura = $_POST['cintura'];
-    $cadera = $_POST['cadera'];
-    $grasa = $_POST['porcentaje_grasa'];
-    $musculo = $_POST['porcentaje_musculo'];
-    $comentarios = mysqli_real_escape_string($conexion, $_POST['comentarios']);
+    $cintura = mysqli_real_escape_string($conexion, $_POST['cintura']);
+    $cadera = mysqli_real_escape_string($conexion, $_POST['cadera']);
+    $grasa = mysqli_real_escape_string($conexion, $_POST['porcentaje_grasa']);
+    $musculo = mysqli_real_escape_string($conexion, $_POST['porcentaje_musculo']);
+    $comentarios = mysqli_real_escape_string($conexion, strip_tags($_POST['comentarios']));
+    
+    // Usamos la fecha actual del servidor
     $fecha = date('Y-m-d');
 
-    // Calculo del IMC
+    // 2. Cálculo del IMC (Doble validación por si falla el JS)
     $imc = 0;
     if ($peso > 0 && $talla_cm > 0) {
         $talla_m = $talla_cm / 100;
-        $imc = $peso / ($talla_m * $talla_m);
-        $imc = round($imc, 2);
+        $imc = round($peso / ($talla_m * $talla_m), 2);
     }
 
-    // Insertamos en la tabla 'evaluaciones' incluyendo la columna 'talla'
+    // 3. Inserción en la base de datos
+    // IMPORTANTE: Asegúrate de que en tu tabla la columna se llame 'fecha_evaluacion' 
+    // o cámbiala aquí a 'fecha' según tu estructura SQL.
     $sql = "INSERT INTO evaluaciones (
                 id_socio, 
                 fecha_evaluacion, 
@@ -47,12 +51,11 @@ if ($_POST) {
             )";
 
     if ($conexion->query($sql)) {
-        echo "<script>
-                alert('¡Evaluación guardada!');
-                window.location='ver_progreso.php?id=$id_socio';
-              </script>";
+        // Redirección limpia para evitar re-envío de formulario al refrescar
+        header("Location: ver_progreso.php?id=$id_socio&res=success");
+        exit();
     } else {
-        echo "Error al guardar: " . $conexion->error;
+        echo "<div class='alert alert-danger'>Error al guardar: " . $conexion->error . "</div>";
     }
 }
 ?>

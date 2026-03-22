@@ -1,6 +1,7 @@
 <?php 
+
 include 'config.php';
-include 'validar_admin.php'; // este archivo valida que seas admin para entrar a esta pagina
+include 'validar_admin.php'; // valida que seas admin para acceder
 include 'header.php'; 
 
 ?>
@@ -28,7 +29,7 @@ include 'header.php';
                         <?php
                         $hoy = strtotime(date('Y-m-d'));
                         
-                        // Traemos el nombre del titular si existe
+                        // Consulta principal: traer socios con su plan y datos del titular (si es familiar)
                         $sql = "SELECT s.*, m.nombre as plan, t.nombre as nombre_titular, t.apellido as apellido_titular 
                                 FROM socios s 
                                 JOIN membresias m ON s.id_membresia = m.id_membresia 
@@ -38,11 +39,13 @@ include 'header.php';
                         $res = $conexion->query($sql);
                         
                         while($row = $res->fetch_assoc()):
+                            // Determinamos estado en base a vencimiento y estado activo
                             $vence = strtotime($row['fecha_vencimiento']);
                             $bloqueado = ($vence < $hoy || $row['estado'] != 'activo');
                             $status_color = $bloqueado ? 'red' : 'green';
                             $status_texto = $bloqueado ? 'BLOQUEADO' : 'ACTIVO';
                             
+                            // Url de foto, si no existe se usa avatar por defecto
                             $foto_final = (!empty($row['foto']) && file_exists("uploads/fotos/".$row['foto'])) 
                                           ? "uploads/fotos/".$row['foto'] 
                                           : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
@@ -76,6 +79,7 @@ include 'header.php';
                             <td>
                                 <div class="btn-list flex-nowrap">
                                     <?php 
+                                    // Verificamos si esta moroso para cambiar estilo y alerta
                                     $es_moroso = (strtotime($row['fecha_vencimiento']) < strtotime($hoy));
                                     ?>
                                     <a href="renovar_socio.php?id=<?php echo $row['id_socio']; ?>" 

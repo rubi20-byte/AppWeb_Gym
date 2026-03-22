@@ -1,84 +1,92 @@
 <?php 
 include 'config.php';
-include 'validar_admin.php'; // este archivo valida que seas admin para entrar a esta pagina
+include 'validar_admin.php'; 
 include 'header.php'; 
 
+$error_msg = ""; // Para mostrar errores de validación
 
 if ($_POST) {
-    $nom   = mysqli_real_escape_string($conexion, $_POST['nombre']);
-    $ape   = mysqli_real_escape_string($conexion, $_POST['apellido']);
+    // 1. Captura de datos básicos
+    $nom   = mysqli_real_escape_string($conexion, strip_tags($_POST['nombre']));
+    $ape   = mysqli_real_escape_string($conexion, strip_tags($_POST['apellido']));
     $tel   = mysqli_real_escape_string($conexion, $_POST['telefono']);
     $con_e = mysqli_real_escape_string($conexion, $_POST['contacto_emergencia']);
-    $cor   = mysqli_real_escape_string($conexion, $_POST['correo']);
+    $cor   = mysqli_real_escape_string($conexion, $_POST['correo']); // Ahora es obligatorio
     $dir   = mysqli_real_escape_string($conexion, $_POST['direccion']);
     $f_nac = $_POST['fecha_nacimiento'];
     $id_mem = $_POST['id_membresia'];
     $id_ent = !empty($_POST['id_entrenador']) ? $_POST['id_entrenador'] : "NULL";
-    
-    // NUEVO: Capturar el Titular
     $id_titular = !empty($_POST['id_titular']) ? $_POST['id_titular'] : "NULL";
-    
     $f_reg = date('Y-m-d');
 
-    // QR y FOTO
-    $limpio_nom = str_replace(' ', '', strtoupper($nom));
-    $limpio_ape = str_replace(' ', '', strtoupper($ape));
-    $limpio_fec = str_replace('-', '', $f_nac);
-    $codigo_qr = substr($limpio_nom, 0, 3) . substr($limpio_ape, 0, 3) . $limpio_fec;
-
-    $nombre_foto = "default.png";
-    if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
-        $extension = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
-        $nombre_foto = "foto_" . time() . "_" . $codigo_qr . "." . $extension;
-        if (!file_exists('uploads/fotos/')) { mkdir('uploads/fotos/', 0777, true); }
-        move_uploaded_file($_FILES['foto']['tmp_name'], "uploads/fotos/" . $nombre_foto);
-    }
-
-    // LÓGICA DE FECHA: Si tiene titular, hereda su vencimiento. Si no, se calcula.
-    if ($id_titular != "NULL") {
-        $tit_res = $conexion->query("SELECT fecha_vencimiento FROM socios WHERE id_socio = $id_titular");
-        $t_data = $tit_res->fetch_assoc();
-        $f_ven = $t_data['fecha_vencimiento'];
+    // 2. VALIDACIÓN: Revisar si el correo ya existe
+    $check_correo = $conexion->query("SELECT id_socio FROM socios WHERE correo = '$cor'");
+    
+    if (empty($cor)) {
+        $error_msg = "El correo electrónico es obligatorio para que el socio acceda al sistema.";
+    } elseif ($check_correo->num_rows > 0) {
+        $error_msg = "Este correo ya está registrado con otro socio.";
     } else {
-        $mem_res = $conexion->query("SELECT duracion_meses FROM membresias WHERE id_membresia = $id_mem");
-        if($mem_res && $mem_res->num_rows > 0){
-            $m = $mem_res->fetch_assoc();
-            $meses = $m['duracion_meses']; 
-            $f_ven = date('Y-m-d', strtotime($f_reg . " + $meses month")); 
-        } else {
-            $f_ven = $f_reg;
+        // 3. Generación de QR (Contraseña)
+        $limpio_nom = str_replace(' ', '', strtoupper($nom));
+        $limpio_ape = str_replace(' ', '', strtoupper($ape));
+        $limpio_fec = str_replace('-', '', $f_nac);
+        $codigo_qr = substr($limpio_nom, 0, 3) . substr($limpio_ape, 0, 3) . $limpio_fec;
+
+        // 4. Gestión de Foto
+        $nombre_foto = "default.png";
+        if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
+            $extension = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
+            $nombre_foto = "foto_" . time() . "_" . $codigo_qr . "." . $extension;
+            if (!file_exists('uploads/fotos/')) { mkdir('uploads/fotos/', 0777, true); }
+            move_uploaded_file($_FILES['foto']['tmp_name'], "uploads/fotos/" . $nombre_foto);
         }
-    }
-    // Limpieza de caracteres raros
-    $nombre = mysqli_real_escape_string($conexion, $_POST['nombre']);
-    $nombre = strip_tags($nombre); // Quita etiquetas HTML
-    $apellido = mysqli_real_escape_string($conexion, $_POST['apellido']);
-    $apellido = strip_tags($apellido); // Quita etiquetas HTML
 
-    $sql = "INSERT INTO socios (id_titular, nombre, apellido, telefono, contacto_emergencia, correo, direccion, fecha_nacimiento, fecha_registro, fecha_vencimiento, id_membresia, id_entrenador, qr_codigo, foto, estado) 
-            VALUES ($id_titular, '$nom', '$ape', '$tel', '$con_e', '$cor', '$dir', '$f_nac', '$f_reg', '$f_ven', $id_mem, $id_ent, '$codigo_qr', '$nombre_foto', 'activo')";
-    
-    if ($conexion->query($sql)) {
-        echo "<script>window.location='socios.php';</script>";
-    } else {
-        die("Error al guardar: " . $conexion->error);
-    }
-    
-    if ($conexion->query($sql)) {
-        $id_nuevo_socio = $conexion->insert_id; // Obtenemos el ID
+        // 5. Lógica de Fecha de Vencimiento
+        if ($id_titular != "NULL") {
+            $tit_res = $conexion->query("SELECT fecha_vencimiento FROM socios WHERE id_socio = $id_titular");
+            $t_data = $tit_res->fetch_assoc();
+            $f_ven = $t_data['fecha_vencimiento'];
+        } else {
+            $mem_res = $conexion->query("SELECT duracion_meses FROM membresias WHERE id_membresia = $id_mem");
+            if($mem_res && $mem_res->num_rows > 0){
+                $m = $mem_res->fetch_assoc();
+                $meses = $m['duracion_meses']; 
+                $f_ven = date('Y-m-d', strtotime($f_reg . " + $meses month")); 
+            } else {
+                $f_ven = $f_reg;
+            }
+        }
+
+        // 6. Inserción Principal
+        $sql = "INSERT INTO socios (id_titular, nombre, apellido, telefono, contacto_emergencia, correo, direccion, fecha_nacimiento, fecha_registro, fecha_vencimiento, id_membresia, id_entrenador, qr_codigo, foto, estado) 
+                VALUES ($id_titular, '$nom', '$ape', '$tel', '$con_e', '$cor', '$dir', '$f_nac', '$f_reg', '$f_ven', $id_mem, $id_ent, '$codigo_qr', '$nombre_foto', 'activo')";
         
-        // historial de membresias (socios_membresias)
-        $sql_historial = "INSERT INTO socios_membresias (id_socio, id_membresia, fecha_inicio, fecha_fin, estado) 
-                          VALUES ($id_nuevo_socio, $id_mem, '$f_reg', '$f_ven', 'activa')";
-        $conexion->query($sql_historial);
+        if ($conexion->query($sql)) {
+            $id_nuevo_socio = $conexion->insert_id;
+            
+            // Historial de membresías
+            $sql_historial = "INSERT INTO socios_membresias (id_socio, id_membresia, fecha_inicio, fecha_fin, estado) 
+                              VALUES ($id_nuevo_socio, $id_mem, '$f_reg', '$f_ven', 'activa')";
+            $conexion->query($sql_historial);
 
-        echo "<script>window.location='socios.php';</script>";
+            echo "<script>window.location='socios.php';</script>";
+            exit();
+        } else {
+            die("Error al guardar: " . $conexion->error);
+        }
     }
 }
 ?>
 
 <div class="page-wrapper">
     <div class="container-xl mt-4">
+        <?php if($error_msg != ""): ?>
+            <div class="alert alert-important alert-danger shadow-sm col-md-10 mx-auto mb-3">
+                <i class="ti ti-alert-triangle me-2"></i> <?php echo $error_msg; ?>
+            </div>
+        <?php endif; ?>
+
         <form method="POST" enctype="multipart/form-data" class="card col-md-10 mx-auto shadow">
             <div class="card-header bg-primary-lt">
                 <h3 class="card-title">Nueva Inscripción de Socio</h3>
@@ -92,15 +100,17 @@ if ($_POST) {
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Nombre(s)</label>
-                        <input type="text" name="nombre" class="form-control" 
-                        pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$" 
-                        title="El nombre solo debe contener letras." required>
+                        <input type="text" name="nombre" class="form-control" pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$" required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Apellido(s)</label>
-                        <input type="text" name="apellido" class="form-control" 
-                        pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$" 
-                        title="El apellido solo debe contener letras." required>
+                        <input type="text" name="apellido" class="form-control" pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Correo Electrónico (Será su usuario)</label>
+                        <input type="email" name="correo" class="form-control border-primary" placeholder="ejemplo@gym.com" required>
+                        <small class="text-muted small">Indispensable para entrar al panel de socio.</small>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -113,13 +123,14 @@ if ($_POST) {
                         <input type="text" name="contacto_emergencia" class="form-control">
                     </div>
 
-                    <div class="col-md-8 mb-3">
-                        <label class="form-label">Dirección</label>
-                        <input type="text" name="direccion" class="form-control">
-                    </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label">Fecha de Nacimiento</label>
                         <input type="date" name="fecha_nacimiento" class="form-control" required>
+                    </div>
+                    
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" name="direccion" class="form-control">
                     </div>
 
                     <div class="hr-text text-blue">Vínculo Familiar y Plan</div>
@@ -135,7 +146,6 @@ if ($_POST) {
                             }
                             ?>
                         </select>
-                        <small class="text-muted italic">Si seleccionas un titular, este socio heredará su fecha de vencimiento.</small>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -167,7 +177,7 @@ if ($_POST) {
             </div>
             <div class="card-footer text-end">
                 <a href="socios.php" class="btn btn-link">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Registrar Socio</button>
+                <button type="submit" class="btn btn-primary shadow-sm">Registrar Socio</button>
             </div>
         </form>
     </div>

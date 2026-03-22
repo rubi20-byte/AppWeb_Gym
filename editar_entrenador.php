@@ -1,19 +1,25 @@
 <?php 
+
+// Carga datos de un entrenador, muestra formulario y guarda cambios en base de datos.
+
 include 'config.php';
-include 'validar_admin.php'; // este archivo valida que seas admin para entrar a esta pagina
+include 'validar_admin.php'; // Valida que el usuario sea administrador
 include 'header.php'; 
 
+// Si hay id en GET, cargamos datos del entrenador para editar
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
     $resultado = $conexion->query("SELECT * FROM entrenadores WHERE id_entrenador = $id");
     $e = $resultado->fetch_assoc();
 
     if (!$e) {
+        // Si no existe id, redirigimos a lista de entrenadores
         echo "<script>window.location='entrenadores.php';</script>";
         exit;
     }
 }
 
+// Cuando el formulario se envia por POST, actualizamos datos
 if ($_POST) {
     $id_ent = $_POST['id_entrenador'];
     $nom = $_POST['nombre'];
@@ -24,6 +30,7 @@ if ($_POST) {
     $tur = $_POST['turno'];
     $est = $_POST['estado'];
 
+    // Construimos SQL para actualizar registro
     $sql = "UPDATE entrenadores SET 
             nombre = '$nom', 
             especialidad = '$esp', 
@@ -35,6 +42,7 @@ if ($_POST) {
             WHERE id_entrenador = $id_ent";
     
     if ($conexion->query($sql)) {
+        // Si actualiza bien, regresamos a la lista con parametro de exito
         echo "<script>window.location='entrenadores.php?res=editado';</script>";
     } else {
         echo "<div class='alert alert-danger text-center'>Error al actualizar: " . $conexion->error . "</div>";

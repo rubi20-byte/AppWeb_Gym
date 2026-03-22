@@ -5,13 +5,13 @@ include 'header.php';
 
 $hoy = date('Y-m-d');
 
-// 1. Consultas para los indicadores (KPIs)
+// Consultas
 $total_socios = $conexion->query("SELECT COUNT(*) as total FROM socios")->fetch_assoc()['total'];
 $activos = $conexion->query("SELECT COUNT(*) as total FROM socios WHERE fecha_vencimiento >= '$hoy' AND estado = 'activo'")->fetch_assoc()['total'];
 $vencidos = $conexion->query("SELECT COUNT(*) as total FROM socios WHERE fecha_vencimiento < '$hoy' OR estado IN ('vencido', 'inactivo')")->fetch_assoc()['total'];
 $total_entrenadores = $conexion->query("SELECT COUNT(*) as total FROM entrenadores WHERE estado = 'activo'")->fetch_assoc()['total'];
 
-// 2. Consulta para la tabla de últimas inscripciones
+// Consulta para la tabla de últimas inscripciones
 $recientes = $conexion->query("SELECT s.*, m.nombre as plan FROM socios s JOIN membresias m ON s.id_membresia = m.id_membresia ORDER BY s.id_socio DESC LIMIT 5");
 ?>
 
@@ -24,15 +24,6 @@ $recientes = $conexion->query("SELECT s.*, m.nombre as plan FROM socios s JOIN m
             </div>
             <div class="col-auto ms-auto">
                 <div class="btn-list">
-                    <a href="pase_diario.php" class="btn btn-success">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-ticket" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M15 5l-10 10a2.121 2.121 0 0 0 3 3l10 -10a2.121 2.121 0 0 0 -3 -3z"></path>
-                            <path d="M19 15v3h-3"></path>
-                            <path d="M9 11l.5 11.5l1.5 1.5l1.5 -1.5l.5 -11.5"></path>
-                        </svg>
-                        Vender Pase Diario
-                    </a>
                     <a href="nuevo_entrenador.php" class="btn btn-purple text-white"><i class="ti ti-plus me-2"></i> Registrar Entrenador</a>
                     <a href="nuevo_socio.php" class="btn btn-primary"><i class="ti ti-user-plus me-2"></i> Inscribir Socio</a>
                 </div>

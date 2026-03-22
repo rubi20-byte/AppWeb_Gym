@@ -1,10 +1,11 @@
 <?php 
 include 'config.php';
-include 'validar_admin.php'; // este archivo valida que seas admin para entrar a esta pagina
+include 'validar_admin.php'; 
 include 'header.php'; 
 
+$error_msg = "";
 
-// 1. Obtener los datos actuales del socio antes de cualquier cambio
+// 1. Obtener los datos actuales del socio
 if (isset($_GET['id'])) {
     $id = mysqli_real_escape_string($conexion, $_GET['id']);
     $resultado = $conexion->query("SELECT * FROM socios WHERE id_socio = $id");
@@ -18,8 +19,8 @@ if (isset($_GET['id'])) {
 
 if ($_POST) {
     $id = $_POST['id_socio'];
-    $nom = mysqli_real_escape_string($conexion, $_POST['nombre']);
-    $ape = mysqli_real_escape_string($conexion, $_POST['apellido']);
+    $nom = mysqli_real_escape_string($conexion, strip_tags($_POST['nombre']));
+    $ape = mysqli_real_escape_string($conexion, strip_tags($_POST['apellido']));
     $tel = mysqli_real_escape_string($conexion, $_POST['telefono']);
     $tel_emergencia = mysqli_real_escape_string($conexion, $_POST['contacto_emergencia']);
     $cor = mysqli_real_escape_string($conexion, $_POST['correo']);
@@ -30,57 +31,63 @@ if ($_POST) {
     $est = $_POST['estado'];
     $f_hoy = date('Y-m-d');
 
-    // --- LÓGICA DE ACTUALIZACIÓN DE FECHA Y HISTORIAL ---
-    $sql_fecha_vencimiento = "";
-    if ($mem_id != $socio['id_membresia']) {
-        $mem_res = $conexion->query("SELECT duracion_meses FROM membresias WHERE id_membresia = $mem_id");
-        if ($mem_res && $mem_res->num_rows > 0) {
-            $m = $mem_res->fetch_assoc();
-            $meses = $m['duracion_meses'];
-            $nueva_fecha = date('Y-m-d', strtotime("+ $meses month"));
-            $sql_fecha_vencimiento = ", fecha_vencimiento = '$nueva_fecha'";
-
-            // INSERTAR EN HISTORIAL: Como el plan cambió, guardamos el registro en la tabla histórica
-            $sql_historial = "INSERT INTO socios_membresias (id_socio, id_membresia, fecha_inicio, fecha_fin, estado) 
-                              VALUES ($id, $mem_id, '$f_hoy', '$nueva_fecha', 'activa')";
-            $conexion->query($sql_historial);
-        }
-    }
-
-    // Lógica para actualizar la foto
-    $sql_update_foto = "";
-    if (isset($_FILES['foto']) && $_FILES['foto']['name'] != "") {
-        $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
-        $nombre_foto = "foto_" . time() . "_" . $id . "." . $ext;
-        
-        if (!file_exists('uploads/fotos/')) {
-            mkdir('uploads/fotos/', 0777, true);
-        }
-
-        if(move_uploaded_file($_FILES['foto']['tmp_name'], "uploads/fotos/" . $nombre_foto)){
-            $sql_update_foto = ", foto = '$nombre_foto'";
-        }
-    }
-
-    $sql = "UPDATE socios SET 
-            nombre = '$nom', 
-            apellido = '$ape', 
-            telefono = '$tel', 
-            contacto_emergencia = '$tel_emergencia',
-            correo = '$cor', 
-            direccion = '$dir', 
-            fecha_nacimiento = '$f_nac', 
-            id_membresia = '$mem_id',
-            id_entrenador = $ent_id,
-            estado = '$est'
-            $sql_fecha_vencimiento
-            $sql_update_foto
-            WHERE id_socio = $id";
+    // --- NUEVAS VALIDACIONES ---
+    // Verificar si el correo está vacío o si ya lo tiene otro socio (excluyendo al socio actual)
+    $check_correo = $conexion->query("SELECT id_socio FROM socios WHERE correo = '$cor' AND id_socio != $id");
     
-    if ($conexion->query($sql)) {
-        echo "<script>window.location='socios.php?res=editado';</script>";
+    if (empty($cor)) {
+        $error_msg = "El correo electrónico es obligatorio para que el socio acceda a su panel.";
+    } elseif ($check_correo->num_rows > 0) {
+        $error_msg = "Este correo ya está registrado por otro socio.";
     } else {
-        echo "<div class='alert alert-danger'>Error: " . $conexion->error . "</div>";
+        // --- CONTINÚA TU LÓGICA DE ACTUALIZACIÓN ---
+        $sql_fecha_vencimiento = "";
+        if ($mem_id != $socio['id_membresia']) {
+            $mem_res = $conexion->query("SELECT duracion_meses FROM membresias WHERE id_membresia = $mem_id");
+            if ($mem_res && $mem_res->num_rows > 0) {
+                $m = $mem_res->fetch_assoc();
+                $meses = $m['duracion_meses'];
+                $nueva_fecha = date('Y-m-d', strtotime("+ $meses month"));
+                $sql_fecha_vencimiento = ", fecha_vencimiento = '$nueva_fecha'";
+
+                $sql_historial = "INSERT INTO socios_membresias (id_socio, id_membresia, fecha_inicio, fecha_fin, estado) 
+                                  VALUES ($id, $mem_id, '$f_hoy', '$nueva_fecha', 'activa')";
+                $conexion->query($sql_historial);
+            }
+        }
+
+        $sql_update_foto = "";
+        if (isset($_FILES['foto']) && $_FILES['foto']['name'] != "") {
+            $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
+            $nombre_foto = "foto_" . time() . "_" . $id . "." . $ext;
+            if (!file_exists('uploads/fotos/')) { mkdir('uploads/fotos/', 0777, true); }
+
+            if(move_uploaded_file($_FILES['foto']['tmp_name'], "uploads/fotos/" . $nombre_foto)){
+                $sql_update_foto = ", foto = '$nombre_foto'";
+            }
+        }
+
+        $sql = "UPDATE socios SET 
+                nombre = '$nom', 
+                apellido = '$ape', 
+                telefono = '$tel', 
+                contacto_emergencia = '$tel_emergencia',
+                correo = '$cor', 
+                direccion = '$dir', 
+                fecha_nacimiento = '$f_nac', 
+                id_membresia = '$mem_id',
+                id_entrenador = $ent_id,
+                estado = '$est'
+                $sql_fecha_vencimiento
+                $sql_update_foto
+                WHERE id_socio = $id";
+        
+        if ($conexion->query($sql)) {
+            echo "<script>window.location='socios.php?res=editado';</script>";
+            exit;
+        } else {
+            $error_msg = "Error en la base de datos: " . $conexion->error;
+        }
     }
 }
 
@@ -90,6 +97,13 @@ $resultado_entrenadores = $conexion->query($query_entrenadores);
 
 <div class="page-wrapper">
     <div class="container-xl mt-4">
+        
+        <?php if($error_msg != ""): ?>
+            <div class="alert alert-important alert-danger shadow-sm col-md-10 mx-auto mb-3">
+                <i class="ti ti-alert-triangle me-2"></i> <?php echo $error_msg; ?>
+            </div>
+        <?php endif; ?>
+
         <form method="POST" enctype="multipart/form-data" class="card col-md-10 mx-auto shadow">
             <div class="card-header bg-yellow-lt">
                 <h3 class="card-title">Editar Información del Socio #<?php echo $socio['id_socio']; ?></h3>
@@ -120,6 +134,12 @@ $resultado_entrenadores = $conexion->query($query_entrenadores);
                         <label class="form-label">Apellido(s)</label>
                         <input type="text" name="apellido" class="form-control" value="<?php echo $socio['apellido']; ?>" required>
                     </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-primary">Correo (Usuario de Acceso)</label>
+                        <input type="email" name="correo" class="form-control border-primary" value="<?php echo $socio['correo']; ?>" required>
+                    </div>
+
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Teléfono</label>
                         <input type="text" name="telefono" class="form-control" value="<?php echo $socio['telefono']; ?>">
@@ -131,13 +151,10 @@ $resultado_entrenadores = $conexion->query($query_entrenadores);
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Correo</label>
-                        <input type="email" name="correo" class="form-control" value="<?php echo $socio['correo']; ?>">
-                    </div>
-                    <div class="col-md-6 mb-3">
                         <label class="form-label">Fecha de Nacimiento</label>
                         <input type="date" name="fecha_nacimiento" class="form-control" value="<?php echo $socio['fecha_nacimiento']; ?>">
                     </div>
+                    
                     <div class="col-md-12 mb-3">
                         <label class="form-label">Dirección</label>
                         <input type="text" name="direccion" class="form-control" value="<?php echo $socio['direccion']; ?>">
@@ -154,7 +171,7 @@ $resultado_entrenadores = $conexion->query($query_entrenadores);
                             }
                             ?>
                         </select>
-                        <small class="text-blue">Si cambias el plan, se generará un nuevo registro en el historial.</small>
+                        <small class="text-blue">Si cambias el plan, se actualizará el vencimiento.</small>
                     </div>
 
                     <div class="col-md-4 mb-3">

@@ -3,7 +3,7 @@ include 'config.php';
 include 'validar_admin.php'; 
 include 'header.php'; 
 
-// obtener socios con membresía vencida
+// Consulta socios con membresia vencida para el reporte de adeudos
 $res_adeudos = $conexion->query("
     SELECT s.id_socio, s.nombre, s.apellido, s.telefono, s.fecha_vencimiento, m.nombre as membresia, m.precio 
     FROM socios s 
@@ -11,7 +11,7 @@ $res_adeudos = $conexion->query("
     WHERE s.estado = 'vencido' 
     ORDER BY s.fecha_vencimiento ASC");
 
-// calculo del total de dinero que deben
+// Calculo total de adeudos pendientes (monto de membresias vencidas)
 $total_pendiente = $conexion->query("
     SELECT SUM(m.precio) as total 
     FROM socios s 
@@ -53,6 +53,7 @@ $total_pendiente = $conexion->query("
                     <tbody>
                         <?php if($res_adeudos->num_rows > 0): ?>
                             <?php while($row = $res_adeudos->fetch_assoc()): 
+                                // Convertimos fechas para calcular dias de atraso
                                 $vence = new DateTime($row['fecha_vencimiento']);
                                 $hoy = new DateTime();
                                 $diff = $hoy->diff($vence);

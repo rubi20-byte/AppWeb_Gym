@@ -3,60 +3,54 @@ include 'config.php';
 session_start();
 
 if ($_POST) {
-    // 1. Limpiamos los datos para evitar errores de SQL
     $id_s       = mysqli_real_escape_string($conexion, $_POST['id_socio']);
     $monto      = mysqli_real_escape_string($conexion, $_POST['monto']);
     $metodo     = mysqli_real_escape_string($conexion, $_POST['metodo_pago']);
-    $concepto   = mysqli_real_escape_string($conexion, $_POST['concepto']);
+    $concepto   = mysqli_real_escape_string($conexion, $_POST['concepto']); // Viene el nombre de la membresía
     $referencia = mysqli_real_escape_string($conexion, $_POST['referencia']);
     $fecha_pago = date('Y-m-d H:i:s');
 
-    // 2. Insertar el registro del pago (con todas las columnas de tu BD)
+    // 1. Registrar el pago en la tabla pagos
+    // Si no hay id_socio (Pase Diario), guardamos NULL para que la base de datos lo acepte
+    $id_socio_db = !empty($id_s) ? "'$id_s'" : "NULL";
+    
     $sql_pago = "INSERT INTO pagos (id_socio, monto, fecha_pago, metodo_pago, referencia, estado, concepto) 
-                 VALUES ('$id_s', '$monto', '$fecha_pago', '$metodo', '$referencia', 'pagado', '$concepto')";
+                 VALUES ($id_socio_db, '$monto', '$fecha_pago', '$metodo', '$referencia', 'pagado', '$concepto')";
     
     if ($conexion->query($sql_pago)) {
         
-        $dias_extra = 0;
-        $actualizar_fecha = false;
-
-        // 3. Lógica para identificar cuánto tiempo sumar según el concepto seleccionado
-        // Usamos strpos para que detecte la palabra aunque el texto sea "Mensualidad (30 días)"
-        if (strpos($concepto, 'Mensualidad') !== false) {
-            $dias_extra = 30;
-            $actualizar_fecha = true;
-        } elseif (strpos($concepto, 'Trimestre') !== false) {
-            $dias_extra = 90;
-            $actualizar_fecha = true;
-        } elseif (strpos($concepto, 'Anual') !== false) {
-            $dias_extra = 365;
-            $actualizar_fecha = true;
-        } elseif (strpos($concepto, 'Familiar') !== false) {
-            $dias_extra = 30;
-            $actualizar_fecha = true;
-        }
-
-        if ($actualizar_fecha) {
-            // Calculamos la nueva fecha sumando los días a la fecha de HOY
-            $nueva_fecha = date('Y-m-d', strtotime("+$dias_extra days"));
+        // 2. Si hay un socio seleccionado, actualizamos su vigencia
+        if (!empty($id_s)) {
+            // Buscamos cuánto dura la membresía seleccionada en la tabla membresias
+            $res_m = $conexion->query("SELECT duracion_meses FROM membresias WHERE nombre = '$concepto'");
             
-            // IMPORTANTE: Aquí se usa 'fecha_vencimiento' para que la tabla de socios se actualice
-            $sql_update = "UPDATE socios SET fecha_vencimiento = '$nueva_fecha', estado = 'activo' WHERE id_socio = '$id_s'";
-            
-            if($conexion->query($sql_update)) {
-                $aviso = "¡Pago de $concepto registrado! Nueva fecha: " . date('d/m/Y', strtotime($nueva_fecha));
+            if ($res_m->num_rows > 0) {
+                $m = $res_m->fetch_assoc();
+                $meses = $m['duracion_meses'];
+
+                if ($meses > 0) {
+                    // Calculamos la nueva fecha sumando los meses
+                    $nueva_fecha = date('Y-m-d', strtotime("+$meses month"));
+                    
+                    // Actualizamos la columna correcta: fecha_vencimiento
+                    $conexion->query("UPDATE socios SET fecha_vencimiento = '$nueva_fecha', estado = 'activo' WHERE id_socio = '$id_s'");
+                    $aviso = "Pago de $concepto registrado. Nueva fecha: " . date('d/m/Y', strtotime($nueva_fecha));
+                } else {
+                    // Si es "Visita Diaria" (0 meses), solo aseguramos que el socio esté activo hoy
+                    $conexion->query("UPDATE socios SET estado = 'activo' WHERE id_socio = '$id_s'");
+                    $aviso = "Pago de Pase Diario registrado para socio.";
+                }
             } else {
-                $aviso = "Pago registrado, pero hubo un error al actualizar la fecha del socio: " . $conexion->error;
+                // Si el concepto no es una membresía (ej: Inscripción o Producto)
+                $aviso = "Pago por $concepto registrado con éxito.";
             }
         } else {
-            // Para otros conceptos (Inscripción, Suplementos, etc.) solo activamos al socio si estaba vencido
-            $conexion->query("UPDATE socios SET estado = 'activo' WHERE id_socio = '$id_s'");
-            $aviso = "Pago por $concepto registrado con éxito.";
+            $aviso = "Pase Diario registrado correctamente (Cliente externo).";
         }
         
         echo "<script>alert('$aviso'); window.location='pagos.php';</script>";
     } else {
-        echo "Error al registrar pago en la tabla pagos: " . $conexion->error;
+        echo "Error al registrar pago: " . $conexion->error;
     }
 }
 ?>

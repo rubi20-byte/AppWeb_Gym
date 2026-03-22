@@ -1,11 +1,12 @@
 <?php 
+
 include 'config.php';
 include 'header.php'; 
 
-// se jala el id que escribimos
+// Recibimos el id del socio de POST y sanitizamos
 $id = mysqli_real_escape_string($conexion, $_POST['id_socio']);
 
-// buscamos al socio en la base de datos
+// Buscamos socio por id en tabla socios
 $sql = "SELECT * FROM socios WHERE id_socio = '$id'";
 $res = $conexion->query($sql);
 ?>

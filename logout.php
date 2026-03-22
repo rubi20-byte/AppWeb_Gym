@@ -1,16 +1,22 @@
 <?php
-// iniciamos la sesion
 session_start();
 
-// borramos todas las variables de la sesio
-session_unset();
+// Destruimos todas las variables de sesión (id_admin, id_socio, rol, etc.)
+$_SESSION = array();
 
-// destruimos la sesion
+// Si se desea destruir la sesión completamente, borramos también la cookie de sesión.
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000,
+        $params["path"], $params["domain"],
+        $params["secure"], $params["httponly"]
+    );
+}
+
+// Finalmente, destruimos la sesión.
 session_destroy();
 
-// mandamos al usuario de regreso al login 
-header("Location: login.php");
+// Redirigimos al login con un mensaje de éxito (opcional)
+header("Location: login.php?logout=success");
 exit();
-
-// este archivo es el que saca a la gente del sistema y limpia la memoria para que quede seguro
 ?>
