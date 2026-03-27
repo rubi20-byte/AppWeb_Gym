@@ -3,10 +3,9 @@ include 'config.php';
 include 'validar_admin.php'; 
 include 'header.php'; 
 
-// Consulta de socios
-$socios = $conexion->query("SELECT id_socio, nombre, apellido, fecha_vencimiento FROM socios ORDER BY nombre ASC");
+// 1. FILTRO DE BORRADO LÓGICO: Solo socios que no estén eliminados (bloqueados)
+$socios = $conexion->query("SELECT id_socio, nombre, apellido, fecha_vencimiento FROM socios WHERE eliminado = 0 ORDER BY nombre ASC");
 
-// Consulta de membresías para sacar nombres y precios
 $membresias = $conexion->query("SELECT id_membresia, nombre, precio FROM membresias WHERE estado = 'activo'");
 ?>
 
@@ -49,9 +48,10 @@ $membresias = $conexion->query("SELECT id_membresia, nombre, precio FROM membres
                                             <?php endwhile; ?>
                                         </select>
                                     </div>
+
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label font-weight-bold">Concepto (Membresía)</label>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label font-weight-bold">Membresía</label>
                                             <select name="concepto" id="select_membresia" class="form-select border-yellow" required>
                                                 <option value="" data-precio="0">-- Seleccione plan --</option>
                                                 <?php while($m = $membresias->fetch_assoc()): ?>
@@ -61,14 +61,21 @@ $membresias = $conexion->query("SELECT id_membresia, nombre, precio FROM membres
                                                 <?php endwhile; ?>
                                             </select>
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label font-weight-bold">Monto a Cobrar</label>
+                                        
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label font-weight-bold">Descuento (%)</label>
+                                            <input type="number" id="input_descuento" name="descuento" class="form-control border-yellow" value="0" min="0" max="100">
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label font-weight-bold">Monto Final</label>
                                             <div class="input-group">
                                                 <span class="input-group-text bg-yellow-lt">$</span>
-                                                <input type="number" step="0.01" name="monto" id="input_monto" class="form-control" placeholder="0.00" required>
+                                                <input type="number" step="0.01" name="monto" id="input_monto" class="form-control fw-bold text-dark" readonly value="0.00">
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label font-weight-bold">Método de Pago</label>
@@ -116,14 +123,6 @@ $membresias = $conexion->query("SELECT id_membresia, nombre, precio FROM membres
                         </div>
                     </div>
                 </div>
-                <div class="alert alert-important alert-info show">
-                    <div class="d-flex">
-                        <div><i class="ti ti-info-circle icon me-2"></i></div>
-                        <div>
-                            Usa el botón de <strong>historial</strong> para buscar ingresos de meses o años pasados.
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -133,14 +132,26 @@ $membresias = $conexion->query("SELECT id_membresia, nombre, precio FROM membres
 document.addEventListener("DOMContentLoaded", function() {
     const selectMembresia = document.getElementById('select_membresia');
     const inputMonto = document.getElementById('input_monto');
+    const inputDescuento = document.getElementById('input_descuento');
 
-    selectMembresia.addEventListener('change', function() {
-        // Obtenemos el precio del atributo data-precio de la opción seleccionada
-        const precioSeleccionado = this.options[this.selectedIndex].getAttribute('data-precio');
+    function calcularTotal() {
+        // Obtenemos el precio base del atributo data-precio
+        let precioBase = parseFloat(selectMembresia.options[selectMembresia.selectedIndex].getAttribute('data-precio')) || 0;
+        let porcentajeDescuento = parseFloat(inputDescuento.value) || 0;
+
+        // Validar que el descuento no sea menor a 0 ni mayor a 100
+        if(porcentajeDescuento < 0) porcentajeDescuento = 0;
+        if(porcentajeDescuento > 100) porcentajeDescuento = 100;
+
+        // Cálculo: Precio - (Precio * (Descuento / 100))
+        let total = precioBase - (precioBase * (porcentajeDescuento / 100));
         
-        // Lo ponemos en el input del monto
-        inputMonto.value = precioSeleccionado;
-    });
+        inputMonto.value = total.toFixed(2);
+    }
+
+    // Escuchar cambios tanto en el selector como en el input de descuento
+    selectMembresia.addEventListener('change', calcularTotal);
+    inputDescuento.addEventListener('input', calcularTotal);
 });
 </script>
 

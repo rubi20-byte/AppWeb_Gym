@@ -89,12 +89,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <form action="login.php" method="post" autocomplete="off">
                     <div class="mb-3">
-                        <label class="form-label text-uppercase fs-7 fw-bold">Correo Electrónico</label>
+                        <label class="form-label fs-7 fw-bold">Correo Electrónico/Usuario</label>
                         <input type="text" name="usuario" class="form-control form-control-lg" placeholder="ejemplo@correo.com" required autofocus>
                     </div>
                     <div class="mb-4">
-                        <label class="form-label text-uppercase fs-7 fw-bold">Código QR</label>
-                        <input type="password" name="password" class="form-control form-control-lg" placeholder="Tu código de socio" required>
+                        <label class="form-label fs-7 fw-bold">Contraseña</label>
+                        <input type="password" name="password" class="form-control form-control-lg" placeholder="Tu contraseña" required>
                     </div>
                     <div class="form-footer">
                         <button type="submit" class="btn btn-danger w-100 btn-lg shadow">INICIAR SESIÓN</button>

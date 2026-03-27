@@ -44,15 +44,15 @@ $proyeccion = $res_proyeccion->fetch_assoc()['total'] ?? 0;
     <div class="container-xl mt-4">
         <div class="page-header mb-4">
             <div class="row align-items-center">
+            <button onclick="window.print();" class="btn btn-primary m-2"><i class="ti ti-printer me-2"></i> Imprimir</button>
                 <div class="col">
                     <h2 class="page-title text-yellow" style="font-size: 1.3rem;">
                         Reportes y Estadísticas
                     </h2>
                     <p class="text-muted">Resumen financiero y operativo</p>
                 </div>
-            </div>
+            </div>    
         </div>
-
         <div class="row row-cards mb-4">
             <div class="col-md-6">
                 <div class="card border-0 shadow-sm bg-yellow-lt">

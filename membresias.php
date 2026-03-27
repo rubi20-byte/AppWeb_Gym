@@ -4,6 +4,7 @@ include 'validar_admin.php'; // este archivo valida que seas admin para entrar a
 include 'header.php'; 
 
 ?>
+
 <div class="page-wrapper">
     <div class="container-xl mt-4">
         <div class="row align-items-center mb-4">

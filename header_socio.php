@@ -38,16 +38,16 @@
             <div class="collapse navbar-collapse" id="navbar-menu">
                 <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
                     <ul class="navbar-nav">
-                        <li class="nav-item active">
+                        <li class="nav-item">
                             <a class="nav-link" href="dashboard_socio.php">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-home"></i></span>
                                 <span class="nav-link-title">Inicio</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="ver_progreso.php">
+                            <a class="nav-link" href="socio_nutricion.php">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clipboard-text"></i></span>
-                                <span class="nav-link-title">Mi Progreso</span>
+                                <span class="nav-link-title">Mis Planes</span>
                             </a>
                         </li>
                         <li class="nav-item">

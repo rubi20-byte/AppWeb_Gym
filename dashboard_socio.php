@@ -1,5 +1,6 @@
 <?php 
 include 'config.php';
+include 'validar_socio.php';
 session_start();
 
 // ID de prueba (Esmeralda)

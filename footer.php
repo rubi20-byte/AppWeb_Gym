@@ -13,6 +13,7 @@
             </div>
         </div>
     </footer>
-</div> </div> <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js" defer></script>
+</div> </div> 
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
 </body>
 </html>

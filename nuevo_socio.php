@@ -3,15 +3,17 @@ include 'config.php';
 include 'validar_admin.php'; 
 include 'header.php'; 
 
-$error_msg = ""; // Para mostrar errores de validación
+$error_msg = ""; 
 
 if ($_POST) {
-    // 1. Captura de datos básicos
     $nom   = mysqli_real_escape_string($conexion, strip_tags($_POST['nombre']));
     $ape   = mysqli_real_escape_string($conexion, strip_tags($_POST['apellido']));
+    // CAPTURAMOS EL SEXO AQUÍ
+    $sexo  = mysqli_real_escape_string($conexion, $_POST['sexo']); 
+    
     $tel   = mysqli_real_escape_string($conexion, $_POST['telefono']);
     $con_e = mysqli_real_escape_string($conexion, $_POST['contacto_emergencia']);
-    $cor   = mysqli_real_escape_string($conexion, $_POST['correo']); // Ahora es obligatorio
+    $cor   = mysqli_real_escape_string($conexion, $_POST['correo']); 
     $dir   = mysqli_real_escape_string($conexion, $_POST['direccion']);
     $f_nac = $_POST['fecha_nacimiento'];
     $id_mem = $_POST['id_membresia'];
@@ -19,21 +21,18 @@ if ($_POST) {
     $id_titular = !empty($_POST['id_titular']) ? $_POST['id_titular'] : "NULL";
     $f_reg = date('Y-m-d');
 
-    // 2. VALIDACIÓN: Revisar si el correo ya existe
     $check_correo = $conexion->query("SELECT id_socio FROM socios WHERE correo = '$cor'");
     
     if (empty($cor)) {
-        $error_msg = "El correo electrónico es obligatorio para que el socio acceda al sistema.";
+        $error_msg = "El correo electrónico es obligatorio.";
     } elseif ($check_correo->num_rows > 0) {
         $error_msg = "Este correo ya está registrado con otro socio.";
     } else {
-        // 3. Generación de QR (Contraseña)
         $limpio_nom = str_replace(' ', '', strtoupper($nom));
         $limpio_ape = str_replace(' ', '', strtoupper($ape));
         $limpio_fec = str_replace('-', '', $f_nac);
         $codigo_qr = substr($limpio_nom, 0, 3) . substr($limpio_ape, 0, 3) . $limpio_fec;
 
-        // 4. Gestión de Foto
         $nombre_foto = "default.png";
         if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
             $extension = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
@@ -42,7 +41,6 @@ if ($_POST) {
             move_uploaded_file($_FILES['foto']['tmp_name'], "uploads/fotos/" . $nombre_foto);
         }
 
-        // 5. Lógica de Fecha de Vencimiento
         if ($id_titular != "NULL") {
             $tit_res = $conexion->query("SELECT fecha_vencimiento FROM socios WHERE id_socio = $id_titular");
             $t_data = $tit_res->fetch_assoc();
@@ -58,22 +56,17 @@ if ($_POST) {
             }
         }
 
-        // 6. Inserción Principal
-        $sql = "INSERT INTO socios (id_titular, nombre, apellido, telefono, contacto_emergencia, correo, direccion, fecha_nacimiento, fecha_registro, fecha_vencimiento, id_membresia, id_entrenador, qr_codigo, foto, estado) 
-                VALUES ($id_titular, '$nom', '$ape', '$tel', '$con_e', '$cor', '$dir', '$f_nac', '$f_reg', '$f_ven', $id_mem, $id_ent, '$codigo_qr', '$nombre_foto', 'activo')";
+        // INSERT ACTUALIZADO CON LA COLUMNA SEXO
+        $sql = "INSERT INTO socios (id_titular, nombre, apellido, sexo, tobacco, contacto_emergencia, correo, direccion, fecha_nacimiento, fecha_registro, fecha_vencimiento, id_membresia, id_entrenador, qr_codigo, foto, estado) 
+                VALUES ($id_titular, '$nom', '$ape', '$sexo', '$tel', '$con_e', '$cor', '$dir', '$f_nac', '$f_reg', '$f_ven', $id_mem, $id_ent, '$codigo_qr', '$nombre_foto', 'activo')";
         
         if ($conexion->query($sql)) {
             $id_nuevo_socio = $conexion->insert_id;
-            
-            // Historial de membresías
             $sql_historial = "INSERT INTO socios_membresias (id_socio, id_membresia, fecha_inicio, fecha_fin, estado) 
                               VALUES ($id_nuevo_socio, $id_mem, '$f_reg', '$f_ven', 'activa')";
             $conexion->query($sql_historial);
-
             echo "<script>window.location='socios.php';</script>";
             exit();
-        } else {
-            die("Error al guardar: " . $conexion->error);
         }
     }
 }
@@ -100,17 +93,23 @@ if ($_POST) {
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Nombre(s)</label>
-                        <input type="text" name="nombre" class="form-control" pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$" required>
+                        <input type="text" name="nombre" class="form-control" required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Apellido(s)</label>
-                        <input type="text" name="apellido" class="form-control" pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$" required>
+                        <input type="text" name="apellido" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sexo</label>
+                        <select name="sexo" class="form-select" required>
+                            <option value="Hombre" selected>Hombre</option>
+                            <option value="Mujer">Mujer</option>
+                        </select>
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Correo Electrónico (Será su usuario)</label>
-                        <input type="email" name="correo" class="form-control border-primary" placeholder="ejemplo@gym.com" required>
-                        <small class="text-muted small">Indispensable para entrar al panel de socio.</small>
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="email" name="correo" class="form-control border-primary" required>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -119,15 +118,15 @@ if ($_POST) {
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Contacto Emergencia</label>
-                        <input type="text" name="contacto_emergencia" class="form-control">
+                        <label class="form-label">Fecha de Nacimiento</label>
+                        <input type="date" name="fecha_nacimiento" id="f_nac" class="form-control" required>
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Fecha de Nacimiento</label>
-                        <input type="date" name="fecha_nacimiento" class="form-control" required>
+                        <label class="form-label text-blue font-weight-bold">Edad Calculada</label>
+                        <input type="text" id="edad_display" class="form-control bg-light" placeholder="0 años" readonly>
                     </div>
-                    
+
                     <div class="col-md-12 mb-3">
                         <label class="form-label">Dirección</label>
                         <input type="text" name="direccion" class="form-control">
@@ -136,7 +135,7 @@ if ($_POST) {
                     <div class="hr-text text-blue">Vínculo Familiar y Plan</div>
 
                     <div class="col-md-12 mb-3">
-                        <label class="form-label text-primary">¿Es dependiente de un Titular? (Opcional)</label>
+                        <label class="form-label">¿Depende de un Titular?</label>
                         <select name="id_titular" class="form-select border-primary">
                             <option value="">-- No, es Titular Independiente --</option>
                             <?php 
@@ -182,4 +181,20 @@ if ($_POST) {
         </form>
     </div>
 </div>
+
+<script>
+document.getElementById('f_nac').addEventListener('change', function() {
+    const fechaNac = new Date(this.value);
+    const hoy = new Date();
+    if (this.value) {
+        let edad = hoy.getFullYear() - fechaNac.getFullYear();
+        const mes = hoy.getMonth() - fechaNac.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+            edad--;
+        }
+        document.getElementById('edad_display').value = (edad >= 0) ? edad + " años" : "Fecha inválida";
+    }
+});
+</script>
+
 <?php include 'footer.php'; ?>
