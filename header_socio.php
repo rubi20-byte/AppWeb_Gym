@@ -51,9 +51,21 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="reportes.php">
-                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clipboard-data"></i></span>
-                                <span class="nav-link-title">Mis Reportes</span>
+                            <a class="nav-link" href="mis_rutinas.php">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-stretching"></i></span>
+                                <span class="nav-link-title">Mi Rutina</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="clases_agenda.php">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-yoga"></i></span>
+                                <span class="nav-link-title">Catálogo de Clases</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="mis_clases.php">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-calendar-event"></i></span>
+                                <span class="nav-link-title">Mis Clases</span>
                             </a>
                         </li>
                     </ul>

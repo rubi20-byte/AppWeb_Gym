@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btn_guardar'])) {
                             <td class="fw-bold text-dark"><?php echo $row['calorias']; ?></td>
                             <td>
                                 <a href="eliminar_nutricion.php?id=<?php echo $row['id_sugerencia']; ?>" 
-                                   class="btn btn-icon btn-sm btn-ghost-danger" 
+                                   class="btn-white text-red btn btn-icon" 
                                    onclick="return confirm('¿Eliminar esta sugerencia?')">
                                     <i class="ti ti-trash"></i>
                                 </a>
@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btn_guardar'])) {
               <label class="form-label">Momento</label>
               <select name="momento" class="form-select" required>
                 <option value="Desayuno">Desayuno</option>
-                <option value="Almuerzo">Almuerzo</option>
+                <option value="Almuerzo">Comida</option>
                 <option value="Cena">Cena</option>
                 <option value="Snack">Snack</option>
               </select>

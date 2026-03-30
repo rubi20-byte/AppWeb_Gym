@@ -13,12 +13,14 @@ $ejercicios = $conexion->query("SELECT * FROM rutina_ejercicio WHERE id_rutina =
 ?>
 
 <div class="page-wrapper">
-    <div class="container-xl">
+    <div class="container-xl"><br>
+        <a href="admin_rutinas.php" class="btn btn-secondary">
+        <i class="ti ti-arrow-left me-2"></i> Volver
+        </a>
         <div class="page-header">
             <h2 class="page-title text-pink">Ejercicios de: <?php echo $rutina['nombre_rutina']; ?></h2>
             <p class="text-muted">Objetivo: <?php echo $rutina['objetivo']; ?></p>
         </div>
-
         <div class="row row-cards">
             <div class="col-md-4">
                 <form action="guardar_rutina_ejercicio.php" method="POST" class="card">
@@ -38,6 +40,17 @@ $ejercicios = $conexion->query("SELECT * FROM rutina_ejercicio WHERE id_rutina =
                                 <label class="form-label">Reps</label>
                                 <input type="text" name="repeticiones" class="form-control" placeholder="12-15">
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tiempo de Descanso</label>
+                            <input type="text" name="descanso" class="form-select" placeholder="Ej: 1 min, 45 seg, 2 min" list="descansos_sugeridos">
+                            <datalist id="descansos_sugeridos">
+                                <option value="30 seg">
+                                <option value="45 seg">
+                                <option value="1 min">
+                                <option value="1:30 min">
+                                <option value="2 min">
+                            </datalist>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Link de Video (YouTube)</label>
@@ -63,6 +76,7 @@ $ejercicios = $conexion->query("SELECT * FROM rutina_ejercicio WHERE id_rutina =
                                     <th>Orden</th>
                                     <th>Ejercicio</th>
                                     <th>Sets/Reps</th>
+                                    <th>Descanso</th>
                                     <th>Video</th>
                                     <th></th>
                                 </tr>
@@ -73,6 +87,9 @@ $ejercicios = $conexion->query("SELECT * FROM rutina_ejercicio WHERE id_rutina =
                                     <td><?php echo $ej['orden']; ?></td>
                                     <td><strong><?php echo $ej['nombre_ejercicio']; ?></strong></td>
                                     <td><?php echo $ej['series'] . " x " . $ej['repeticiones']; ?></td>
+                                    <td>
+                                        <?php echo !empty($ej['descanso']) ? $ej['descanso'] : '1 min'; ?>
+                                    </td>
                                     <td>
                                         <?php if($ej['url_video']): ?>
                                             <a href="<?php echo $ej['url_video']; ?>" target="_blank" class="badge bg-red-lt">Ver Video</a>

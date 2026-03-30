@@ -29,7 +29,6 @@ $res_rutinas = $conexion->query("SELECT * FROM rutinas ORDER BY id_rutina DESC")
                             <tr>
                                 <th>Nombre</th>
                                 <th>Objetivo</th>
-                                <th>Nivel</th>
                                 <th class="w-1">Acciones</th>
                             </tr>
                         </thead>
@@ -38,7 +37,6 @@ $res_rutinas = $conexion->query("SELECT * FROM rutinas ORDER BY id_rutina DESC")
                             <tr>
                                 <td><strong><?php echo $r['nombre_rutina']; ?></strong></td>
                                 <td class="text-muted"><?php echo $r['objetivo']; ?></td>
-                                <td><span class="badge bg-pink-lt"><?php echo $r['nivel']; ?></span></td>
                                 <td>
                                     <div class="btn-list flex-nowrap">
                                         <a href="gestionar_ejercicios.php?id=<?php echo $r['id_rutina']; ?>" class="btn btn-white text-pink">
@@ -75,14 +73,6 @@ $res_rutinas = $conexion->query("SELECT * FROM rutinas ORDER BY id_rutina DESC")
                         <option value="Pérdida de peso">Pérdida de peso</option>
                         <option value="Ganancia muscular">Ganancia muscular</option>
                         <option value="Resistencia">Resistencia</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Nivel</label>
-                    <select name="nivel" class="form-select">
-                        <option value="Principiante">Principiante</option>
-                        <option value="Intermedio">Intermedio</option>
-                        <option value="Avanzado">Avanzado</option>
                     </select>
                 </div>
             </div>
