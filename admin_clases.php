@@ -149,7 +149,6 @@ if (isset($_POST['guardar_clase'])) {
                             </td>
                             <td>
                                 <div class="btn-list flex-nowrap">
-                                    <a href="editar_clase.php?id=<?php echo $c['id_clase']; ?>" class="btn btn-white btn-icon btn-sm"><i class="ti ti-edit"></i></a>
                                     <a href="eliminar_clase.php?id=<?php echo $c['id_clase']; ?>" class="btn btn-danger btn-icon btn-sm" onclick="return confirm('¿Seguro?')"><i class="ti ti-trash"></i></a>
                                 </div>
                             </td>

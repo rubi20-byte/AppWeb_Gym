@@ -39,13 +39,6 @@
             <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-home"></i></span>
-                            <span class="nav-link-title">Inicio</span>
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item">
                         <a class="nav-link" href="socios.php">
                             <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-users"></i></span>
                             <span class="nav-link-title">Socios</span>
@@ -74,7 +67,12 @@
                             <span class="nav-link-title">Pagos y Caja</span>
                         </a>
                     </li>
-
+                    <li class="nav-item">
+                        <a class="nav-link" href="inventario.php">
+                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-box"></i></span>
+                            <span class="nav-link-title">Inventario</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="gestion_planesyrutinas.php">
                             <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-stretching"></i></span>

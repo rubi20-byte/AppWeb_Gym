@@ -19,7 +19,7 @@ $id_r = $datos_socio['id_rutina'] ?? null;
     <div class="container-xl mt-4">
         <div class="page-header mb-4">
             <h2 class="page-title text-azure">
-                <i class="ti ti-stretching me-2"></i> Mi Rutina Personalizada
+                Mi Rutina Personalizada
             </h2>
         </div>
 
@@ -46,7 +46,6 @@ $id_r = $datos_socio['id_rutina'] ?? null;
                                 </thead>
                                 <tbody>
                                     <?php
-                                    // 2. Usamos el nombre exacto de tu tabla: rutina_ejercicio
                                     $sql_ej = "SELECT * FROM rutina_ejercicio WHERE id_rutina = '$id_r' ORDER BY orden ASC";
                                     $res_ej = $conexion->query($sql_ej);
                                     
@@ -63,7 +62,7 @@ $id_r = $datos_socio['id_rutina'] ?? null;
                                         <td><?php echo $ej['repeticiones']; ?></td>
                                         <td class="text-muted">
                                             <i class="ti ti-clock-pause me-1"></i>
-                                            <?php echo !empty($ej['descanso']) ? $ej['descanso'] : '1 min'; ?>
+                                            <?php echo $ej['descanso']; ?>
                                         </td>
                                     </tr>
                                     <?php 

@@ -5,13 +5,11 @@ error_reporting(E_ALL);
 include 'config.php';
 session_start();
 
-// 2. Si ya hay una sesión activa, redirigir
+// 2. Si ya hay una sesión activa, redirigir según el rol
 if (isset($_SESSION['rol'])) {
-    if ($_SESSION['rol'] == 'admin') {
-        header("Location: index.php");
-    } else {
-        header("Location: dashboard_socio.php");
-    }
+    if ($_SESSION['rol'] == 'admin') { header("Location: index.php"); }
+    elseif ($_SESSION['rol'] == 'entrenador') { header("Location: dashboard_entrenador.php"); }
+    else { header("Location: dashboard_socio.php"); }
     exit();
 }
 
@@ -19,8 +17,9 @@ $error_msg = "";
 
 // 3. Procesar el formulario
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Escapamos los datos para evitar inyecciones SQL
     $user = mysqli_real_escape_string($conexion, $_POST['usuario']);
-    $pass = mysqli_real_escape_string($conexion, $_POST['password']);
+    $pass = mysqli_real_escape_string($conexion, $_POST['password']); 
 
     // --- INTENTO 1: ADMINISTRADORES ---
     $query_admin = "SELECT * FROM usuarios WHERE usuario = '$user' AND password = '$pass'";
@@ -37,8 +36,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    // --- INTENTO 2: SOCIOS (Usando 'correo' y 'qr_codigo') ---
-    // Según tu SQL: correo y qr_codigo son los nombres reales
+    // --- INTENTO 2: ENTRENADORES ---
+    // Buscamos por correo y contraseña tal cual (texto plano)
+    $query_profe = "SELECT * FROM entrenadores WHERE correo = '$user' AND password = '$pass' AND estado = 'activo'";
+    $res_profe = $conexion->query($query_profe);
+
+    if ($res_profe && $res_profe->num_rows > 0) {
+        $datos_p = $res_profe->fetch_assoc();
+        
+        $_SESSION['id_entrenador'] = $datos_p['id_entrenador'];
+        $_SESSION['nombre'] = $datos_p['nombre'];
+        $_SESSION['rol'] = 'entrenador';
+
+        session_write_close();
+        header("Location: dashboard_entrenador.php");
+        exit();
+    }
+
+    // --- INTENTO 3: SOCIOS ---
+    // Usamos qr_codigo como contraseña, tal como lo tienes configurado
     $query_socio = "SELECT id_socio, nombre, apellido, estado FROM socios WHERE correo = '$user' AND qr_codigo = '$pass'";
     $res_socio = $conexion->query($query_socio);
 
@@ -54,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: dashboard_socio.php");
         exit();
     } else {
-        $error_msg = "Credenciales incorrectas. Verifica tu correo o código QR.";
+        $error_msg = "Credenciales incorrectas. Verifica tus datos de acceso.";
     }
 }
 ?>
@@ -70,6 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .bg-overlay { background: rgba(0, 0, 0, 0.7); }
         .bg-dark-panel { background-color: #1a2234 !important; color: #ffffff !important; }
         .bg-dark-panel .form-control { background-color: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: #fff; }
+        .btn-danger { background-color: #ff4d4d; border: none; }
+        .btn-danger:hover { background-color: #e60000; }
     </style>
 </head>
 <body class="d-flex flex-column">
@@ -77,10 +95,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="col-12 col-lg-6 col-xl-8 d-none d-lg-block bg-gym-image">
             <div class="bg-overlay h-100"></div>
         </div>
+        
         <div class="col-12 col-lg-6 col-xl-4 d-flex flex-column justify-content-center bg-dark-panel border-top-wide border-primary">
             <div class="container container-tight my-5 px-lg-5">
                 <div class="text-center mb-4">
                     <h1 class="text-uppercase fw-bold" style="color: #ff4d4d;">GYM RUBÍ</h1>
+                    <p class="text-muted">Panel de Acceso Staff & Socios</p>
                 </div>
                 
                 <?php if($error_msg != ""): ?>
@@ -89,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <form action="login.php" method="post" autocomplete="off">
                     <div class="mb-3">
-                        <label class="form-label fs-7 fw-bold">Correo Electrónico/Usuario</label>
+                        <label class="form-label fs-7 fw-bold">Correo Electrónico / Usuario</label>
                         <input type="text" name="usuario" class="form-control form-control-lg" placeholder="ejemplo@correo.com" required autofocus>
                     </div>
                     <div class="mb-4">

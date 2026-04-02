@@ -41,17 +41,17 @@ $ejercicios = $conexion->query("SELECT * FROM rutina_ejercicio WHERE id_rutina =
                                 <input type="text" name="repeticiones" class="form-control" placeholder="12-15">
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Tiempo de Descanso</label>
-                            <input type="text" name="descanso" class="form-select" placeholder="Ej: 1 min, 45 seg, 2 min" list="descansos_sugeridos">
-                            <datalist id="descansos_sugeridos">
-                                <option value="30 seg">
-                                <option value="45 seg">
-                                <option value="1 min">
-                                <option value="1:30 min">
-                                <option value="2 min">
-                            </datalist>
-                        </div>
+                       <div class="mb-3">
+    <label class="form-label">Tiempo de Descanso</label>
+    <select name="descanso" class="form-select">
+        <option value="30 seg">30 seg</option>
+        <option value="45 seg">45 seg</option>
+        <option value="1 min" selected>1 min</option>
+        <option value="1:30 min">1:30 min</option>
+        <option value="2 min">2 min</option>
+        <option value="3 min">3 min</option>
+    </select>
+</div>
                         <div class="mb-3">
                             <label class="form-label">Link de Video (YouTube)</label>
                             <input type="text" name="url_video" class="form-control" placeholder="https://youtube.com/...">
@@ -87,9 +87,9 @@ $ejercicios = $conexion->query("SELECT * FROM rutina_ejercicio WHERE id_rutina =
                                     <td><?php echo $ej['orden']; ?></td>
                                     <td><strong><?php echo $ej['nombre_ejercicio']; ?></strong></td>
                                     <td><?php echo $ej['series'] . " x " . $ej['repeticiones']; ?></td>
-                                    <td>
-                                        <?php echo !empty($ej['descanso']) ? $ej['descanso'] : '1 min'; ?>
-                                    </td>
+                                    <td><span class="badge bg-azure-lt">
+                                        <?php echo htmlspecialchars($ej['descanso']); ?>
+                                    </span></td>
                                     <td>
                                         <?php if($ej['url_video']): ?>
                                             <a href="<?php echo $ej['url_video']; ?>" target="_blank" class="badge bg-red-lt">Ver Video</a>

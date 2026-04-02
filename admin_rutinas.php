@@ -40,9 +40,9 @@ $res_rutinas = $conexion->query("SELECT * FROM rutinas ORDER BY id_rutina DESC")
                                 <td>
                                     <div class="btn-list flex-nowrap">
                                         <a href="gestionar_ejercicios.php?id=<?php echo $r['id_rutina']; ?>" class="btn btn-white text-pink">
-                                            <i class="ti ti-list-details text-pink me-1"></i> Ejercicios
+                                            <i class="ti ti-stretching text-pink me-1"></i> Ejercicios
                                         </a>
-                                        <a href="#" class="btn btn-white text-pink btn-icon"><i class="ti ti-trash me-1"></i></a>
+                                        <a href="eliminar_rutina.php?id=<?php echo $r['id_rutina']; ?>" class="btn btn-white text-pink btn-icon"><i class="ti ti-trash me-1"></i></a>
                                     </div>
                                 </td>
                             </tr>
@@ -77,7 +77,7 @@ $res_rutinas = $conexion->query("SELECT * FROM rutinas ORDER BY id_rutina DESC")
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Guardar Rutina</button>
+                <button type="submit" class="btn btn-pink">Guardar Rutina</button>
             </div>
         </form>
     </div>

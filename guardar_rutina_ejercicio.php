@@ -1,32 +1,25 @@
 <?php
 include 'config.php';
-
-// Esto nos ayudará a ver el error real si algo falla
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+include 'validar_entrenador.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Recibimos los datos del formulario
     $id_rutina = $_POST['id_rutina'];
-    $nombre = $conexion->real_escape_string($_POST['nombre_ejercicio']);
-    $series = (int)$_POST['series'];
-    $reps = $conexion->real_escape_string($_POST['repeticiones']);
-    $video = $conexion->real_escape_string($_POST['url_video']);
-    $orden = (int)$_POST['orden'];
+    $nombre_ejercicio = mysqli_real_escape_string($conexion, $_POST['nombre_ejercicio']);
+    $series = $_POST['series'];
+    $repeticiones = $_POST['repeticiones'];
+    $descanso = mysqli_real_escape_string($conexion, $_POST['descanso']);
+    $url_video = mysqli_real_escape_string($conexion, $_POST['url_video']);
+    $orden = $_POST['orden'];
 
-    // SQL ajustado a tus nuevas columnas
-    // Asegúrate que los nombres coincidan con los que pusimos en el SQL anterior
-    $sql = "INSERT INTO rutina_ejercicio (id_rutina, nombre_ejercicio, series, repeticiones, url_video, orden) 
-            VALUES ('$id_rutina', '$nombre', '$series', '$reps', '$video', '$orden')";
-    
+    // Insertamos en la tabla de unión (rutina_ejercicio)
+    $sql = "INSERT INTO rutina_ejercicio (id_rutina, nombre_ejercicio, series, repeticiones, descanso, url_video, orden) 
+            VALUES ('$id_rutina', '$nombre_ejercicio', '$series', '$repeticiones', '$descanso', '$url_video', '$orden')";
+
     if ($conexion->query($sql)) {
-        // Si todo sale bien, regresamos a la gestión
-        header("Location: gestionar_ejercicios.php?id=$id_rutina&status=success");
+        // Regresamos a la misma página para seguir agregando más
+        header("Location: gestionar_ejercicios_ent.php?id=$id_rutina&msj=ok");
     } else {
-        // Si hay error de SQL, aquí nos lo dirá en lugar de dar error 500
-        echo "Error en la base de datos: " . $conexion->error;
+        echo "Error: " . $conexion->error;
     }
-} else {
-    echo "No se recibieron datos.";
 }
 ?>

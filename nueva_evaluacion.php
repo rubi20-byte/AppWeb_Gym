@@ -3,7 +3,6 @@ include 'config.php';
 include 'validar_admin.php'; // este archivo valida que seas admin para entrar a esta pagina
 include 'header.php'; 
 
-
 // Recibimos los IDs desde la URL
 $id_socio = isset($_GET['id_socio']) ? $_GET['id_socio'] : '';
 $id_ent = isset($_GET['id_ent']) ? $_GET['id_ent'] : '';
