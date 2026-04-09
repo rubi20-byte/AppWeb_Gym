@@ -68,6 +68,12 @@
                                 <span class="nav-link-title">Mis Clases</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="tienda_socio.php">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-building-store"></i></span>
+                                <span class="nav-link-title">Tienda</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
