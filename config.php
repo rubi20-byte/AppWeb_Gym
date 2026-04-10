@@ -1,5 +1,4 @@
 <?php
-// Configuración de la base de datos
 $host = 'localhost';     
 $user = 'admin';    
 $pass = 'c527504a2e76165ad8be016080a33bca80e9e3d0696919ab';   

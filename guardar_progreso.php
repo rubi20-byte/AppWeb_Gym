@@ -16,16 +16,13 @@ if ($_POST) {
     // Usamos la fecha actual del servidor
     $fecha = date('Y-m-d');
 
-    // 2. Cálculo del IMC (Doble validación por si falla el JS)
+    // 2. Cálculo del IMC
     $imc = 0;
     if ($peso > 0 && $talla_cm > 0) {
         $talla_m = $talla_cm / 100;
         $imc = round($peso / ($talla_m * $talla_m), 2);
     }
 
-    // 3. Inserción en la base de datos
-    // IMPORTANTE: Asegúrate de que en tu tabla la columna se llame 'fecha_evaluacion' 
-    // o cámbiala aquí a 'fecha' según tu estructura SQL.
     $sql = "INSERT INTO evaluaciones (
                 id_socio, 
                 fecha_evaluacion, 

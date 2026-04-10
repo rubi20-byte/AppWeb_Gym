@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $telefono = mysqli_real_escape_string($conexion, $_POST['telefono']);
     $correo = mysqli_real_escape_string($conexion, $_POST['correo']);
     $turno = $_POST['turno'];
-    $comision = $_POST['tarifa_comision']; // Corregido para que coincida con el name del HTML
+    $comision = $_POST['tarifa_comision'];
     $fecha = $_POST['fecha_contratacion']; 
     
     // 2. Encriptamos la contraseña

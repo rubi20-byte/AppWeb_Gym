@@ -5,7 +5,7 @@ include 'header_entrenador.php';
 
 $id_profe = $_SESSION['id_entrenador'];
 
-// --- MODIFICACIÓN: Agregamos JOIN para traer el nombre de la rutina real ---
+// Agregamos JOIN para traer el nombre de la rutina real ---
 $query_socios = "SELECT s.*, r.nombre_rutina 
                  FROM socios s
                  LEFT JOIN rutinas r ON s.id_rutina = r.id_rutina
@@ -53,7 +53,6 @@ $res_socios = $conexion->query($query_socios);
             <?php while ($socio = $res_socios->fetch_assoc()): 
                 $id_s = $socio['id_socio'];
                 
-                // --- MODIFICACIÓN: Guardamos la rutina real en una variable ---
                 $rutina_actual = !empty($socio['nombre_rutina']) ? $socio['nombre_rutina'] : "Sin Rutina";
 
                 // Obtener datos para la gráfica

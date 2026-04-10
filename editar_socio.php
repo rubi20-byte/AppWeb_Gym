@@ -31,7 +31,6 @@ if ($_POST) {
     $est = $_POST['estado'];
     $f_hoy = date('Y-m-d');
 
-    // --- NUEVAS VALIDACIONES ---
     // Verificar si el correo está vacío o si ya lo tiene otro socio (excluyendo al socio actual)
     $check_correo = $conexion->query("SELECT id_socio FROM socios WHERE correo = '$cor' AND id_socio != $id");
     
@@ -40,7 +39,6 @@ if ($_POST) {
     } elseif ($check_correo->num_rows > 0) {
         $error_msg = "Este correo ya está registrado por otro socio.";
     } else {
-        // --- CONTINÚA TU LÓGICA DE ACTUALIZACIÓN ---
         $sql_fecha_vencimiento = "";
         if ($mem_id != $socio['id_membresia']) {
             $mem_res = $conexion->query("SELECT duracion_meses FROM membresias WHERE id_membresia = $mem_id");

@@ -3,7 +3,6 @@ include 'validar_admin.php';
 include 'config.php';
 include 'header.php';
 
-// --- LÓGICA DE GUARDADO ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btn_guardar'])) {
     $objetivo = $_POST['objetivo'];
     $momento = $_POST['momento'];

@@ -13,7 +13,6 @@ $id_clase = $_GET['id'] ?? null;
 
 if ($id_clase) {
     // 3. Validación: ¿Hay alumnos inscritos en esta clase?
-    // Es mejor no borrar una clase que ya tiene gente anotada para no perder el historial.
     $check_reservas = $conexion->query("SELECT id_reserva FROM reservas_clases WHERE id_clase = '$id_clase'");
 
     if ($check_reservas->num_rows > 0) {

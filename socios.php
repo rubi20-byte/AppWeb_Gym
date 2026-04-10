@@ -33,7 +33,6 @@ $hoy = strtotime($hoy_str);
                     </thead>
                     <tbody>
                         <?php
-                        // SQL CORREGIDO: Agregamos el LEFT JOIN con la tabla entrenadores
                         $sql = "SELECT s.*, m.nombre as plan, t.nombre as nombre_titular, t.apellido as apellido_titular, 
                                        e.nombre as nombre_entrenador 
                                 FROM socios s 

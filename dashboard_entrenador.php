@@ -1,13 +1,11 @@
 <?php
 include 'config.php';
-include 'validar_entrenador.php'; // El que creamos arriba
-include 'header_entrenador.php'; // Ahorita te paso este si no lo tienes
+include 'validar_entrenador.php';
+include 'header_entrenador.php';
 
 $id_profe = $_SESSION['id_entrenador'];
 
-// Consultas rápidas para los indicadores (Cards)
 $total_socios = $conexion->query("SELECT COUNT(*) as total FROM socios WHERE id_entrenador = $id_profe")->fetch_assoc()['total'];
-// (Aquí podrías sumar clases de hoy o evaluaciones pendientes)
 ?>
 
 <div class="page-wrapper">

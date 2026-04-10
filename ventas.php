@@ -3,7 +3,6 @@ include 'validar_admin.php';
 include 'config.php';
 include 'header.php';
 
-// Consulta para traer los pagos que son específicamente de productos
 $query = "SELECT p.*, s.nombre as socio_nombre, s.apellido as socio_apellido 
           FROM pagos p 
           INNER JOIN socios s ON p.id_socio = s.id_socio 
@@ -11,7 +10,6 @@ $query = "SELECT p.*, s.nombre as socio_nombre, s.apellido as socio_apellido
           ORDER BY p.fecha_pago DESC";
 $res_ventas = $conexion->query($query);
 
-// Sumatoria total en gris
 $total_ventas = $conexion->query("SELECT SUM(monto) as total FROM pagos WHERE concepto LIKE '%Producto%'")->fetch_assoc();
 ?>
 

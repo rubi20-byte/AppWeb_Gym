@@ -1,9 +1,8 @@
 <?php 
 include 'config.php';
-include 'validar_entrenador.php'; // Cambiado para que el profe SI pueda entrar
+include 'validar_entrenador.php'; 
 include 'header_entrenador.php'; 
 
-// Recibimos el ID desde la URL (el que mandamos desde la tarjeta)
 $id_socio = isset($_GET['id']) ? $_GET['id'] : '';
 
 // Consultamos el nombre del socio para que el profe sepa a quién evalúa

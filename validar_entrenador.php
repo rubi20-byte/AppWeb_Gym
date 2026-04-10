@@ -9,6 +9,5 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'entrenador') {
     exit();
 }
 
-// Guardamos el ID del profe en una variable fácil de usar
 $id_profe_sesion = $_SESSION['id_entrenador'];
 ?>

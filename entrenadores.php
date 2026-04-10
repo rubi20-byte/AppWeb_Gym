@@ -33,7 +33,6 @@ include 'header.php';
                     </thead>
                     <tbody>
                         <?php
-                        // Consulta a la base de datos
                         $res = $conexion->query("SELECT * FROM entrenadores ORDER BY id_entrenador DESC");
                         while($e = $res->fetch_assoc()):
                         ?>

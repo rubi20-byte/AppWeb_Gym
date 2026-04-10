@@ -1,7 +1,4 @@
 <?php 
-
-// Carga datos de un entrenador, muestra formulario y guarda cambios en base de datos.
-
 include 'config.php';
 include 'validar_admin.php'; // Valida que el usuario sea administrador
 include 'header.php'; 

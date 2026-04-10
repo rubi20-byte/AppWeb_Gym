@@ -10,7 +10,6 @@ if (isset($_GET['id'])) {
     $nombre_plan = $info['nombre'];
 
     // 2. CONTAR SOCIOS: Verificamos si hay socios activos con este plan
-    // Nota: Ajusta 'plan_estudio' o como se llame tu columna de membresía en la tabla socios
     $check_socios = $conexion->query("SELECT COUNT(*) as total FROM socios WHERE membresia = '$nombre_plan' AND eliminado = 0");
     $resultado = $check_socios->fetch_assoc();
 

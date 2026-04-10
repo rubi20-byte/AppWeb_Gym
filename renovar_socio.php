@@ -30,10 +30,10 @@ if (isset($_GET['id'])) {
             $referencia = "Renovación con MULTA ($$multa_monto) por atraso";
         }
 
-        // 3. CALCULAR NUEVA FECHA (A partir de hoy para que se actualice de verdad)
+        // 3. CALCULAR NUEVA FECHA (A partir de hoy)
         $nueva_fecha = date('Y-m-d', strtotime("+ $meses month"));
 
-        // 4. ACTUALIZAR TABLA SOCIOS (Aquí es donde se soluciona tu problema de fecha)
+        // 4. ACTUALIZAR TABLA SOCIOS
         $update_socio = "UPDATE socios SET 
                          fecha_vencimiento = '$nueva_fecha', 
                          estado = 'activo' 
@@ -41,13 +41,13 @@ if (isset($_GET['id'])) {
         
         if ($conexion->query($update_socio)) {
             
-            // 5. REGISTRAR EN PAGOS (Ahora con todos los campos necesarios)
+            // 5. REGISTRAR EN PAGOS
             $concepto_pago = "Membresía: " . $nombre_membresia;
             $sql_pago = "INSERT INTO pagos (id_socio, monto, fecha_pago, metodo_pago, referencia, estado, concepto) 
                          VALUES ('$id', '$total_pago', NOW(), 'Efectivo', '$referencia', 'pagado', '$concepto_pago')";
             $conexion->query($sql_pago);
 
-            // 6. HISTORIAL DE MEMBRESÍAS (Opcional, pero recomendado)
+            // 6. HISTORIAL DE MEMBRESÍAS
             $sql_hist = "INSERT INTO socios_membresias (id_socio, id_membresia, fecha_inicio, fecha_fin, estado) 
                          VALUES ($id, $id_mem, '$f_hoy', '$nueva_fecha', 'activa')";
             $conexion->query($sql_hist);

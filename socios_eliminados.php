@@ -3,7 +3,7 @@ include 'config.php';
 include 'validar_admin.php'; 
 include 'header.php'; 
 
-// CONSULTA: Solo los que marcamos como eliminados/bloqueados
+// Solo los que marcamos como eliminados/bloqueados
 $query = "SELECT id_socio, nombre, apellido, correo, qr_codigo, fecha_vencimiento 
           FROM socios 
           WHERE eliminado = 1 

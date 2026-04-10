@@ -12,9 +12,7 @@ if (isset($_POST['guardar_clase'])) {
     $h_inicio = $_POST['hora_inicio'];
     $h_fin = $_POST['hora_fin'];
     $cap = $_POST['capacidad'];
-    
-    // Corregido: Se incluye fecha_clase en el INSERT
-    $sql = "INSERT INTO clases (nombre_clase, descripcion, id_entrenador, fecha_clase, hora_inicio, hora_fin, capacidad, estado) 
+        $sql = "INSERT INTO clases (nombre_clase, descripcion, id_entrenador, fecha_clase, hora_inicio, hora_fin, capacidad, estado) 
             VALUES ('$nombre', '$desc', '$id_entrenador', '$fecha_clase', '$h_inicio', '$h_fin', '$cap', 'activo')";
     
     if($conexion->query($sql)) {

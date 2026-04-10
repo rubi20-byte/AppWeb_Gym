@@ -3,10 +3,8 @@ include 'config.php';
 include 'validar_entrenador.php'; 
 include 'header_entrenador.php'; 
 
-// ID del entrenador desde la sesión
 $id_entrenador = $_SESSION['id_entrenador']; 
 
-// Consulta oficial según tu SQL de 'clases'
 $query_clases = "SELECT * FROM clases 
                  WHERE id_entrenador = $id_entrenador 
                  AND estado = 'activo' 
