@@ -17,7 +17,7 @@ $query_bloqueados = "SELECT id_socio, nombre, apellido, correo, qr_codigo, estad
                      ORDER BY nombre ASC";
 $res_bloqueados = $conexion->query($query_bloqueados);
 
-// 3. Consulta para Entrenadores (Ajustada a tu SQL real)
+// 3. Consulta para Entrenadores
 $query_entrenadores = "SELECT id_entrenador, nombre, correo, password, estado 
                        FROM entrenadores 
                        WHERE estado = 'activo' 
@@ -63,7 +63,7 @@ $entrenadores_acceso = $conexion->query($query_entrenadores);
                             <th>Nombre</th><th>Email</th><th>Contraseña</th><th>Estatus</th><th></th>
                         </tr>
                     </thead>
-                    <tbody>
+                  <tbody>
                         <?php if($res_bloqueados && $res_bloqueados->num_rows > 0): ?>
                             <?php while($b = $res_bloqueados->fetch_assoc()): ?>
                             <tr>

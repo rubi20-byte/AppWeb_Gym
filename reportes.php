@@ -28,6 +28,27 @@ $res_ingresos = $conexion->query("
     ) as total
 ");
 
+// Consulta para obtener los 5 productos más vendidos
+$sql_top = "SELECT 
+                SUBSTRING_INDEX(SUBSTRING_INDEX(concepto, ': ', -1), ' (', 1) AS producto,
+                COUNT(*) as total_ventas,
+                SUM(monto) as total_ingresos
+            FROM pagos 
+            WHERE concepto LIKE 'Producto:%'
+            GROUP BY producto
+            ORDER BY total_ventas DESC
+            LIMIT 5";
+
+$res_top = $conexion->query($sql_top);
+
+$nombres_prod = [];
+$cantidades_prod = [];
+
+while($row = $res_top->fetch_assoc()) {
+    $nombres_prod[] = $row['producto'];
+    $cantidades_prod[] = $row['total_ventas'];
+}
+
 $ingresos_mes = $res_ingresos->fetch_assoc()['total'] ?? 0;
 
 // Proyeccion de ingresos (lo que deberían pagar los activos)
@@ -40,11 +61,67 @@ $res_proyeccion = $conexion->query("
 $proyeccion = $res_proyeccion->fetch_assoc()['total'] ?? 0;
 ?>
 
+<style>
+    /* ENCABEZADO PARA IMPRESIÓN (Oculto en pantalla) */
+    .print-header { display: none; }
+
+    @media print {
+        /* 1. Limpieza total de elementos web */
+        .navbar, .btn, .nav, .footer, header, .avatar, .card-status-top, .no-print, canvas {
+            display: none !important;
+        }
+
+        /* 2. Configuración de página */
+        @page { size: portrait; margin: 1.5cm; }
+        
+        body { background: white !important; color: black !important; font-family: "Times New Roman", serif !important; }
+
+        .page-wrapper, .container-xl { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+
+        /* 3. Encabezado Formal */
+        .print-header {
+            display: block !important;
+            border-bottom: 2px solid black;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        /* 4. Tablas Estilo Contable (Blanco y Negro) */
+        .card { border: none !important; box-shadow: none !important; margin-bottom: 30px !important; }
+        .card-title { font-weight: bold; text-transform: uppercase; border-bottom: 1px solid black; margin-bottom: 10px; }
+        
+        .table { width: 100% !important; border-collapse: collapse !important; margin-top: 10px; }
+        .table th { 
+            background-color: #f2f2f2 !important; 
+            border: 1px solid black !important; 
+            color: black !important; 
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        .table td { 
+            border: 1px solid black !important; 
+            color: black !important; 
+            font-size: 12px;
+            padding: 5px !important;
+        }
+        
+        /* Forzar texto en negro (quitar verdes/azules) */
+        .text-green, .text-yellow, .text-blue { color: black !important; font-weight: bold !important; }
+    }
+</style>
 <div class="page-wrapper">
     <div class="container-xl mt-4">
+        <div class="print-header">
+    <h1 style="margin:0;">GYM SYSTEM PRO</h1>
+    <p style="margin:0; font-size: 14px;">Reporte Ejecutivo de Ventas e Inventario</p>
+    <hr style="border: 1px solid #000; margin: 10px 0;">
+    <div style="display: flex; justify-content: space-between;">
+        <span><strong>Fecha:</strong> <?php echo date('d/m/Y'); ?></span>
+        <span><strong>Hora:</strong> <?php echo date('H:i'); ?></span>
+    </div>
+</div>
         <div class="page-header mb-4">
             <div class="row align-items-center">
-            <button onclick="window.print();" class="btn btn-primary m-2"><i class="ti ti-printer me-2"></i> Imprimir</button>
                 <div class="col">
                     <h2 class="page-title text-yellow" style="font-size: 1.3rem;">
                         Reportes y Estadísticas
@@ -313,4 +390,90 @@ $proyeccion = $res_proyeccion->fetch_assoc()['total'] ?? 0;
             </div>
         </div>
 
-    </div> </div> <?php include 'footer.php'; ?>
+        <div class="container-xl mt-4">
+    <div class="page-header mb-4">
+        <h2 class="page-title text-yellow">Análisis de Ventas de Productos</h2>
+    </div>
+
+    <div class="row row-cards">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h3 class="card-title">Top 5 Productos (Frecuencia)</h3>
+                    <div id="chart-container" style="height: 300px;">
+                        <canvas id="chart-productos"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-table table-responsive">
+                    <table class="table table-vcenter">
+                        <thead class="bg-dark text-white">
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Ventas</th>
+                                <th class="text-end">Ingresos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            $res_top->data_seek(0); // Reiniciamos el puntero del resultado
+                            while($r = $res_top->fetch_assoc()): ?>
+                            <tr>
+                                <td class="fw-bold"><?php echo $r['producto']; ?></td>
+                                <td class="text-center"><?php echo $r['total_ventas']; ?></td>
+                                <td class="text-end text-green fw-bold">$<?php echo number_format($r['total_ingresos'], 2); ?></td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('chart-productos').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: <?php echo json_encode($nombres_prod); ?>,
+            datasets: [{
+                label: 'Unidades Vendidas',
+                data: <?php echo json_encode($cantidades_prod); ?>,
+                backgroundColor: 'rgba(245, 158, 11, 0.2)', // El amarillo de tu sistema
+                borderColor: 'rgba(245, 158, 11, 1)',
+                borderWidth: 2,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { display: false } },
+                x: { grid: { display: false } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+});
+</script>
+
+<div class="row mt-4 mb-5">
+    <div class="col-12 text-center">
+        <button onclick="window.print();" class="btn btn-dark btn-pill shadow-sm px-4">
+            <i class="ti ti-printer me-2"></i> Generar Reporte Formal para Imprimir
+        </button>
+    </div>
+</div>
+</div> </div> <?php include 'footer.php'; ?>

@@ -3,98 +3,97 @@ include 'config.php';
 include 'validar_admin.php'; 
 include 'header.php'; 
 
-// 1. Capturar la fecha buscada (si no hay, usamos la de hoy para la consulta inicial)
-$fecha_busqueda = isset($_GET['fecha']) ? $_GET['fecha'] : date('Y-m-d');
+$fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-d');
+$fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
+$filtro_tipo = $_GET['tipo'] ?? 'todos';
 
-// 2. Consulta filtrada por la fecha seleccionada
-// Unimos con la tabla socios para traer los nombres
-$sql = "SELECT p.*, s.nombre, s.apellido 
+// Consulta optimizada para tu estructura
+$sql = "SELECT 
+            p.*, 
+            s.nombre AS socio_n, 
+            s.apellido AS socio_a, 
+            prov.nombre AS nombre_proveedor
         FROM pagos p 
         LEFT JOIN socios s ON p.id_socio = s.id_socio 
-        WHERE DATE(p.fecha_pago) = '$fecha_busqueda' 
-        ORDER BY p.fecha_pago DESC";
+        -- Intentamos unir por el nombre que aparece en el concepto
+        LEFT JOIN productos prod ON (p.concepto LIKE CONCAT('%', prod.nombre, '%') AND prod.nombre != '')
+        LEFT JOIN proveedores prov ON prod.id_proveedor = prov.id_proveedor
+        WHERE DATE(p.fecha_pago) BETWEEN '$fecha_inicio' AND '$fecha_fin'";
 
+if ($filtro_tipo == 'membresia') {
+    $sql .= " AND p.concepto NOT LIKE '%Producto%'";
+} elseif ($filtro_tipo == 'producto') {
+    $sql .= " AND p.concepto LIKE '%Producto%'";
+}
+
+$sql .= " ORDER BY p.fecha_pago DESC";
 $resultado = $conexion->query($sql);
-
-// 3. Calcular el total de ese día para mostrarlo arriba
-$total_dia = 0;
 ?>
 
 <div class="page-wrapper">
     <div class="container-xl mt-4">
-        <div class="page-header mb-4">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h2 class="page-title text-azure">Historial de Pagos</h2>
-                    <p class="text-muted">Consulta los movimientos realizados en fechas anteriores.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card shadow-sm mb-4">
+        <h2 class="page-title text-yellow mb-3">Historial de Pagos</h2>
+        
+        <div class="card mb-3 border-0 shadow-sm">
             <div class="card-body">
-                <form title="Filtrar por fecha" method="GET" action="historial_pagos.php" class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Seleccionar fecha de búsqueda:</label>
-                        <input type="date" name="fecha" class="form-control" 
-                               value="<?php echo $fecha_busqueda; ?>" 
-                               onchange="this.form.submit()"> </div>
-                    <div class="col-md-4">
-                        <a href="historial_pagos.php" class="btn btn-secondary">Limpiar filtro</a>
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Desde</label>
+                        <input type="date" name="fecha_inicio" class="form-control" value="<?php echo $fecha_inicio; ?>">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Hasta</label>
+                        <input type="date" name="fecha_fin" class="form-control" value="<?php echo $fecha_fin; ?>">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo</label>
+                        <select name="tipo" class="form-select">
+                            <option value="todos" <?php echo $filtro_tipo == 'todos' ? 'selected' : ''; ?>>Todos</option>
+                            <option value="membresia" <?php echo $filtro_tipo == 'membresia' ? 'selected' : ''; ?>>Membresías</option>
+                            <option value="producto" <?php echo $filtro_tipo == 'producto' ? 'selected' : ''; ?>>Productos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-yellow w-100 fw-bold">Filtrar</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card shadow-sm">
             <div class="table-responsive">
                 <table class="table table-vcenter card-table table-striped">
-                    <thead class="bg-azure-lt">
+                    <thead class="bg-dark text-white">
                         <tr>
-                            <th>Hora</th>
-                            <th>Socio / Cliente</th>
+                            <th>Fecha</th>
+                            <th>Socio</th>
                             <th>Concepto</th>
-                            <th>Método</th>
-                            <th>Referencia</th>
-                            <th>Monto</th>
+                            <th>Proveedor</th>
+                            <th class="text-end">Monto</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if($resultado->num_rows > 0): ?>
-                            <?php while($row = $resultado->fetch_assoc()): 
-                                $total_dia += $row['monto']; ?>
-                            <tr>
-                                <td class="text-muted small">
-                                    <?php echo date('H:i:s', strtotime($row['fecha_pago'])); ?>
-                                </td>
-                                <td>
-                                    <?php 
-                                    // Si no hay socio, es un pase diario o cliente externo
-                                    if($row['nombre']) {
-                                        echo "<strong>".$row['nombre']." ".$row['apellido']."</strong>";
+                        <?php if ($resultado && $resultado->num_rows > 0): while($p = $resultado->fetch_assoc()): ?>
+                        <tr>
+                            <td class="small text-muted"><?php echo date('d/m/y H:i', strtotime($p['fecha_pago'])); ?></td>
+                            <td class="fw-bold"><?php echo $p['socio_n'] ? $p['socio_n']." ".$p['socio_a'] : 'Público'; ?></td>
+                            <td><?php echo $p['concepto']; ?></td>
+                            <td class="text-blue fw-bold">
+                                <?php 
+                                    // Verificación triple
+                                    if (!empty($p['nombre_proveedor'])) {
+                                        echo $p['nombre_proveedor'];
+                                    } elseif (!empty($p['proveedor'])) {
+                                        echo $p['proveedor'];
                                     } else {
-                                        echo "<span class='text-orange font-weight-bold'>".$row['referencia']."</span>";
+                                        echo '<span class="text-muted small">Sin asignar</span>';
                                     }
-                                    ?>
-                                </td>
-                                <td><?php echo $row['concepto']; ?></td>
-                                <td>
-                                    <span class="badge bg-blue-lt"><?php echo $row['metodo_pago'] ?: 'No reg.'; ?></span>
-                                </td>
-                                <td class="text-muted small"><?php echo $row['referencia']; ?></td>
-                                <td class="fw-bold text-dark">$<?php echo number_format($row['monto'], 2); ?></td>
-                            </tr>
-                            <?php endwhile; ?>
-                            <tr class="bg-light">
-                                <td colspan="5" class="text-end fw-bold">TOTAL DEL DÍA:</td>
-                                <td class="fw-bold text-azure h3">$<?php echo number_format($total_dia, 2); ?></td>
-                            </tr>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="6" class="text-center py-5">
-                                    <div class="text-muted">No se encontraron pagos para la fecha seleccionada.</div>
-                                </td>
-                            </tr>
+                                ?>
+                            </td>
+                            <td class="text-end fw-bold">$<?php echo number_format($p['monto'], 2); ?></td>
+                        </tr>
+                        <?php endwhile; else: ?>
+                        <tr><td colspan="5" class="text-center py-4">No hay datos para mostrar</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>

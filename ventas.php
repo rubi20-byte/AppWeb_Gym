@@ -78,7 +78,7 @@ $total_ventas = $conexion->query("SELECT SUM(monto) as total FROM pagos WHERE co
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="#" class="btn btn-ghost-secondary btn-icon" title="Imprimir Comprobante">
+                                    <a href="ticket.php?id=<?php echo $v['id_pago']; ?>" class="btn btn-ghost-secondary btn-icon" title="Imprimir Comprobante">
                                         <i class="ti ti-printer"></i>
                                     </a>
                                 </td>

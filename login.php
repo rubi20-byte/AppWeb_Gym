@@ -1,76 +1,93 @@
 <?php
-// 1. Configuración de errores y sesión
+/**
+ * SISTEMA DE GESTIÓN GYM RUBÍ
+ * Archivo: login.php
+ */
+
+// 1. Configuración de errores
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
 include 'config.php';
 session_start();
 
-// 2. Si ya hay una sesión activa, redirigir según el rol
+/**
+ * 2. Control de acceso para sesiones activas
+ */
 if (isset($_SESSION['rol'])) {
-    if ($_SESSION['rol'] == 'admin') { header("Location: index.php"); }
-    elseif ($_SESSION['rol'] == 'entrenador') { header("Location: dashboard_entrenador.php"); }
-    else { header("Location: dashboard_socio.php"); }
+    if ($_SESSION['rol'] == 'Administrador') { 
+        header("Location: index.php"); 
+    } elseif ($_SESSION['rol'] == 'Recepcionista') { 
+        header("Location: dashboard_caja.php"); 
+    } elseif ($_SESSION['rol'] == 'Entrenador') { 
+        header("Location: dashboard_entrenador.php"); 
+    } else { 
+        header("Location: dashboard_socio.php"); 
+    }
     exit();
 }
 
 $error_msg = "";
 
-// 3. Procesar el formulario
+/**
+ * 3. Procesamiento de inicio de sesión
+ */
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Escapamos los datos para evitar inyecciones SQL
+    
     $user = mysqli_real_escape_string($conexion, $_POST['usuario']);
     $pass = mysqli_real_escape_string($conexion, $_POST['password']); 
 
-    // --- INTENTO 1: ADMINISTRADORES ---
-    $query_admin = "SELECT * FROM usuarios WHERE usuario = '$user' AND password = '$pass'";
-    $res_admin = $conexion->query($query_admin);
+    /**
+     * CONSULTA A TABLA: usuarios (Administrador y Recepcionista)
+     */
+    $query_staff = "SELECT * FROM usuarios WHERE usuario = '$user' AND password = '$pass' AND estado = 'activo'";
+    $res_staff = $conexion->query($query_staff);
 
-    if ($res_admin && $res_admin->num_rows > 0) {
-        $datos = $res_admin->fetch_assoc();
-        $_SESSION['id_usuario'] = $datos['id_usuario'];
-        $_SESSION['nombre'] = $datos['nombre'];
-        $_SESSION['rol'] = 'admin';
+    if ($res_staff && $res_staff->num_rows > 0) {
+        $datos = $res_staff->fetch_assoc();
         
-        session_write_close();
-        header("Location: index.php");
+        $_SESSION['id_usuario'] = $datos['id_usuario'];
+        $_SESSION['nombre'] = $datos['nombre_completo']; 
+        $_SESSION['rol'] = $datos['rol']; 
+        
+        if ($datos['rol'] == 'Administrador') {
+            header("Location: index.php");
+        } elseif ($datos['rol'] == 'Recepcionista') {
+            header("Location: dashboard_caja.php");
+        }
         exit();
     }
 
-    // --- INTENTO 2: ENTRENADORES ---
-    // Buscamos por correo y contraseña tal cual (texto plano)
+    /**
+     * CONSULTA A TABLA: entrenadores (Como lo tenías originalmente)
+     */
     $query_profe = "SELECT * FROM entrenadores WHERE correo = '$user' AND password = '$pass' AND estado = 'activo'";
     $res_profe = $conexion->query($query_profe);
 
     if ($res_profe && $res_profe->num_rows > 0) {
         $datos_p = $res_profe->fetch_assoc();
-        
         $_SESSION['id_entrenador'] = $datos_p['id_entrenador'];
         $_SESSION['nombre'] = $datos_p['nombre'];
-        $_SESSION['rol'] = 'entrenador';
-
-        session_write_close();
+        $_SESSION['rol'] = 'Entrenador';
         header("Location: dashboard_entrenador.php");
         exit();
     }
 
-    // --- INTENTO 3: SOCIOS ---
-    // Usamos qr_codigo como contraseña, tal como lo tienes configurado
+    /**
+     * CONSULTA A TABLA: socios (Como lo tenías originalmente)
+     */
     $query_socio = "SELECT id_socio, nombre, apellido, estado FROM socios WHERE correo = '$user' AND qr_codigo = '$pass'";
     $res_socio = $conexion->query($query_socio);
 
     if ($res_socio && $res_socio->num_rows > 0) {
         $datos_s = $res_socio->fetch_assoc();
-        
         $_SESSION['id_socio'] = $datos_s['id_socio'];
         $_SESSION['nombre'] = $datos_s['nombre'] . " " . $datos_s['apellido'];
-        $_SESSION['rol'] = 'socio';
-        $_SESSION['estado'] = $datos_s['estado'];
-
-        session_write_close();
+        $_SESSION['rol'] = 'Socio';
         header("Location: dashboard_socio.php");
         exit();
     } else {
-        $error_msg = "Credenciales incorrectas. Verifica tus datos de acceso.";
+        $error_msg = "Usuario o contraseña incorrectos.";
     }
 }
 ?>
@@ -100,24 +117,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="container container-tight my-5 px-lg-5">
                 <div class="text-center mb-4">
                     <h1 class="text-uppercase fw-bold" style="color: #ff4d4d;">GYM RUBÍ</h1>
-                    <p class="text-muted">Panel de Acceso Staff & Socios</p>
+                    <p class="text-muted text-uppercase fw-bold small">Inicio de Sesión</p>
                 </div>
                 
                 <?php if($error_msg != ""): ?>
-                <div class="alert alert-danger bg-danger-lt border-0 mb-4"><?php echo $error_msg; ?></div>
+                <div class="alert alert-danger bg-danger-lt border-0 mb-4 text-center fw-bold"><?php echo $error_msg; ?></div>
                 <?php endif; ?>
 
                 <form action="login.php" method="post" autocomplete="off">
                     <div class="mb-3">
-                        <label class="form-label fs-7 fw-bold">Correo Electrónico / Usuario</label>
-                        <input type="text" name="usuario" class="form-control form-control-lg" placeholder="ejemplo@correo.com" required autofocus>
+                        <label class="form-label fs-7 fw-bold">USUARIO / CORREO</label>
+                        <input type="text" name="usuario" class="form-control form-control-lg" required autofocus>
                     </div>
                     <div class="mb-4">
-                        <label class="form-label fs-7 fw-bold">Contraseña</label>
-                        <input type="password" name="password" class="form-control form-control-lg" placeholder="Tu contraseña" required>
+                        <label class="form-label fs-7 fw-bold">CONTRASEÑA</label>
+                        <input type="password" name="password" class="form-control form-control-lg" required>
                     </div>
                     <div class="form-footer">
-                        <button type="submit" class="btn btn-danger w-100 btn-lg shadow">INICIAR SESIÓN</button>
+                        <button type="submit" class="btn btn-danger w-100 btn-lg shadow text-uppercase fw-bold">Entrar</button>
                     </div>
                 </form>
             </div>

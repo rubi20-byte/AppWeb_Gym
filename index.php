@@ -27,7 +27,6 @@ $recientes = $conexion->query("SELECT s.*, m.nombre as plan FROM socios s JOIN m
                     <a href="reportes.php" class="btn btn-yellow text-white"><i class="ti ti-chart-bar me-2"></i>Reportes</a>
                     <a href="acceso_qr.php" class="btn btn-lime"><i class="ti ti-qrcode me-2"></i> Control de Acceso</a>
                     <a href="admin_clases.php" class="btn btn-azure shadow-sm"><i class="ti ti-calendar-event me-2"></i>Clases Grupales</a>
-                    <a href="ventas.php" class="btn btn-teal shadow-sm"><i class="ti ti-coin me-2"></i>Ventas</a>
                 </div>
             </div>
         </div>
